@@ -260,7 +260,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function status(i){
   var c=COURSES[i], r=S.p[c.id]||{};
   if(r.st) return r.st;
-  if(S.build) return 'open';
+  if(CAN_EDIT) return 'open';
   for(var j=0;j<i;j++){
     var pc=COURSES[j];
     if(!pc.test || !(pc.q||[]).length) continue;
@@ -867,7 +867,7 @@ function render(){
   else v.innerHTML=vPath();
   document.getElementById('foot').innerHTML =
     'Inloggad som '+esc(ME)+' &nbsp;·&nbsp; <button id="logout">Logga ut</button>'+
-    (CAN_EDIT?' &nbsp;·&nbsp; <button id="build">'+(S.build?'Byggläge på, allt upplåst. Klicka för att låsa vägen':'Byggläge av, vägen är låst i ordning. Klicka för att låsa upp')+'</button>':'');
+    (CAN_EDIT?' &nbsp;·&nbsp; Admin, alla steg är upplåsta':'');
   if(!render.keep) window.scrollTo(0,0);
   render.keep=false;
   loadImages();
