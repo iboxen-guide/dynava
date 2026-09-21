@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynava Larnaca — Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F6F4F0; --panel:#FFFFFF; --ink:#16202B; --muted:#5D6773;
+  --line:#E2DED6; --line-2:#D5D0C6;
+  --bar:#17293A; --bar-line:#33485C; --bar-ink:#C2CEDA; --bar-field:#22384C; --bar-mark:#6FB3CE;
+  --accent:#1E5F79; --accent-soft:#F0F6F8; --accent-line:#C3D6DE;
+  --ok:#2F6B4F; --ok-soft:#EAF1EC; --ok-line:#A9C6B5;
+  --warn:#8A6218; --warn-soft:#FFF8E9; --warn-line:#DCC489;
+  --bad:#9A3F33; --bad-soft:#FBEDEA; --bad-line:#D9A9A0;
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14181D; --panel:#1B2026; --ink:#E9EBEE; --muted:#9AA3AE;
+    --line:#2C333B; --line-2:#3A424C;
+    --bar:#0F171F; --bar-line:#2A3A4A; --bar-ink:#A8B6C4; --bar-field:#1B2833; --bar-mark:#6FB3CE;
+    --accent:#6FAFC9; --accent-soft:#16262E; --accent-line:#2C4752;
+    --ok:#7CC09A; --ok-soft:#16241C; --ok-line:#2E4A38;
+    --warn:#DDB268; --warn-soft:#241E12; --warn-line:#4A3D22;
+    --bad:#DD9084; --bad-soft:#251815; --bad-line:#4C2E28;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14181D; --panel:#1B2026; --ink:#E9EBEE; --muted:#9AA3AE;
+  --line:#2C333B; --line-2:#3A424C;
+  --bar:#0F171F; --bar-line:#2A3A4A; --bar-ink:#A8B6C4; --bar-field:#1B2833; --bar-mark:#6FB3CE;
+  --accent:#6FAFC9; --accent-soft:#16262E; --accent-line:#2C4752;
+  --ok:#7CC09A; --ok-soft:#16241C; --ok-line:#2E4A38;
+  --warn:#DDB268; --warn-soft:#241E12; --warn-line:#4A3D22;
+  --bad:#DD9084; --bad-soft:#251815; --bad-line:#4C2E28;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;line-height:1.3}
+button{font:inherit;cursor:pointer;color:inherit}
+a{color:var(--accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* topbar */
+.bar{background:var(--bar);position:sticky;top:0;z-index:30}
+.bar-in{max-width:1180px;margin:0 auto;height:52px;padding:0 16px;display:flex;align-items:center;gap:18px}
+.logo{font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:600;color:#fff;font-style:italic;letter-spacing:-.01em;text-decoration:none;flex:none}
+.sep{width:1px;height:20px;background:var(--bar-line);flex:none}
+.bar nav{display:flex;gap:18px;align-items:center;flex:none}
+.bar nav button{background:none;border:0;color:var(--bar-ink);font-size:13.5px;padding:4px 0;border-bottom:2px solid transparent}
+.bar nav button.on{color:#fff;font-weight:500;border-bottom-color:var(--bar-mark)}
+.bar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.find{position:relative}
+.find input{width:220px;height:30px;padding:0 10px;border:1px solid var(--bar-line);border-radius:var(--r);background:var(--bar-field);color:#fff;font:inherit;font-size:13px}
+.find input::placeholder{color:#7C8FA1}
+.find input:focus{outline:2px solid var(--bar-mark);outline-offset:-1px}
+.hits{position:absolute;top:36px;right:0;width:340px;max-width:78vw;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);max-height:60vh;overflow:auto;display:none}
+.hits.on{display:block}
+.hit{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 13px}
+.hit:last-child{border-bottom:0}
+.hit:hover{background:var(--accent-soft)}
+.hit b{display:block;font-size:13.5px;font-weight:600}
+.hit small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.hit .where{color:var(--accent);font-size:11.5px;margin-top:5px;display:block}
+.hit.off{opacity:.6}
+.me{width:30px;height:30px;border-radius:50%;background:#2C4356;color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:600;flex:none}
+.bell{position:relative;background:none;border:1px solid var(--bar-line);border-radius:var(--r);width:30px;height:30px;display:grid;place-items:center;color:var(--bar-ink)}
+.bell span{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:99px;background:#C7622E;color:#fff;font-size:10.5px;font-weight:600;display:grid;place-items:center;padding:0 4px}
+
+/* layout */
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 56px;display:flex;gap:22px;align-items:flex-start}
+.col-main{flex:1 1 auto;min-width:0}
+.col-side{width:290px;flex:none;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.pad{padding:14px 18px}
+.lead{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.lead:first-child{margin-top:0}
+
+/* path */
+.track{height:4px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:10px}
+.track i{display:block;height:100%;background:var(--accent);transition:width .4s ease}
+.step{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px;display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.step.now{border-color:var(--accent);border-left:3px solid var(--accent);padding-left:12px}
+.step.off{opacity:.6;cursor:default}
+.step:not(.off):hover{border-color:var(--accent)}
+.n{width:22px;height:22px;flex:none;border-radius:5px;border:1px solid var(--line);display:grid;place-items:center;font-size:11.5px;font-weight:600;color:var(--muted)}
+.step.now .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.step .t{flex:1 1 auto;min-width:0}
+.step .t b{display:block;font-size:14px;font-weight:600}
+.step .t small{display:block;font-size:13px;color:var(--muted);margin-top:1px}
+.chip{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:5px;padding:3px 8px;border:1px solid var(--line-2);background:var(--ground);color:var(--muted);white-space:nowrap}
+.chip.go{background:var(--accent);border-color:var(--accent);color:#fff;padding:4px 10px}
+.chip.ok{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-line)}
+.chip.wait{color:var(--warn);background:var(--warn-soft);border-color:var(--warn-line)}
+.chip.redo{color:var(--bad);background:var(--bad-soft);border-color:var(--bad-line)}
+
+/* notes */
+.note{border-radius:var(--r);padding:13px 15px;font-size:13px;line-height:1.55}
+.note.warn{background:var(--warn-soft);border:1px solid var(--warn-line)}
+.note.ok{background:var(--ok-soft);border:1px solid var(--ok-line)}
+.note b{display:block;font-size:12.5px;margin-bottom:5px}
+.note.warn b{color:var(--warn)}
+.note.ok b{color:var(--ok)}
+.pill{display:inline-block;text-decoration:none;font-size:12px;color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:99px;padding:4px 9px;margin:0 5px 5px 0}
+
+/* course */
+.crumb{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted);margin-bottom:12px;flex-wrap:wrap}
+.crumb button{background:none;border:0;color:var(--accent);padding:0;text-decoration:underline}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:16px 0 22px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 15px;font-size:14px;color:var(--muted);margin-bottom:-1px}
+.tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.prose{font-family:Newsreader,Georgia,serif;font-size:16.5px;line-height:1.65;color:var(--ink)}
+.prose h2{font-family:Newsreader,Georgia,serif;font-size:20px;font-weight:600;margin:26px 0 10px}
+.prose h2:first-child{margin-top:0}
+.prose p{margin:0 0 14px}
+.prose strong{font-weight:600}
+.pull{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:20px 0}
+.pull .k{font-family:"IBM Plex Sans",sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.pull p{margin:0;font-size:16px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.three div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px;font-family:"IBM Plex Sans",sans-serif}
+.three b{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.three span{font-size:13px;line-height:1.5;color:var(--muted)}
+.xlink{display:block;width:100%;text-align:left;background:var(--accent-soft);border:1px solid var(--accent-line);
+  border-radius:var(--r);padding:13px 15px;margin:16px 0;font-family:"IBM Plex Sans",sans-serif}
+.xlink:hover{border-color:var(--accent)}
+.xlink .xk{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.xlink .xt{display:block;font-size:15px;font-weight:600}
+.xlink .xd{display:block;font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+.xlink .xl{display:inline-block;font-size:12px;color:var(--muted);margin-top:7px;border:1px solid var(--line-2);border-radius:5px;padding:2px 7px}
+.xlink[data-locked] .xt{opacity:.7}
+.exer{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 16px;margin:12px 0;font-family:"IBM Plex Sans",sans-serif}
+.exer .k{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.exer .exq{margin:0 0 10px;font-size:15px;font-weight:500}
+.exs{margin:12px 0 0;padding-left:20px;font-size:14px;line-height:1.7}
+.exs .stop{list-style:none;margin-left:-20px;margin-top:6px;color:var(--muted);font-style:italic}
+.edwrap{position:relative;border:1px dashed var(--line-2);border-radius:6px;padding:4px 10px 2px;margin:8px 0}
+.edpen{position:absolute;top:-11px;right:8px;display:inline-flex;align-items:center;gap:4px;font:600 11.5px "IBM Plex Sans",sans-serif;background:var(--panel);border:1px solid var(--line-2);border-radius:5px;padding:2px 7px;color:var(--accent);cursor:pointer}
+.edbox{border:2px solid var(--accent);border-radius:8px;padding:14px;margin:10px 0;background:var(--panel);font-family:"IBM Plex Sans",sans-serif}
+.edbox .edk{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.edbox label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:8px 0 4px}
+.edbox input,.edbox textarea{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)}
+.edhint{font-size:12px;color:var(--muted);margin-top:5px}
+.quick{font-size:14px;line-height:1.6}
+.quick div{padding:10px 0;border-bottom:1px solid var(--line)}
+.quick div:last-child{border-bottom:0}
+.quick b{color:var(--ink)}
+.facts div{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);line-height:1.65}
+.facts span{color:var(--ink)}
+
+/* buttons */
+.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:var(--r);padding:9px 16px;font-size:13.5px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.main:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--line-2)}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+
+/* test */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:8px}
+.q .qt{font-size:14.5px;font-weight:600;line-height:1.45;margin-bottom:12px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;font-size:13.5px;margin-bottom:6px;line-height:1.45}
+.opt:hover{border-color:var(--accent)}
+.opt .box{width:16px;height:16px;flex:none;border:1.5px solid var(--line-2);margin-top:1px}
+.opt .box.rd{border-radius:50%}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .box{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 2.5px var(--panel)}
+.opt.good{border-color:var(--ok);background:var(--ok-soft);font-weight:500}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt .mark{margin-left:auto;font-size:12.5px;flex:none;padding-left:8px}
+.why{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px;line-height:1.6;color:var(--muted)}
+textarea{width:100%;font:inherit;font-size:13.5px;line-height:1.55;padding:10px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--panel);color:var(--ink);resize:vertical;min-height:88px}
+textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.score{display:flex;gap:16px;align-items:flex-start}
+.score .big{width:72px;height:72px;flex:none;border-radius:8px;display:grid;place-items:center;align-content:center}
+.score .big b{font-size:24px;font-weight:600;line-height:1}
+.score .big small{font-size:12.5px}
+.pass{background:var(--ok-soft);border:1px solid var(--ok-line);color:var(--ok)}
+.fail{background:var(--bad-soft);border:1px solid var(--bad-line);color:var(--bad)}
+
+/* admin */
+.filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.filters button{background:var(--panel);border:1px solid var(--line-2);border-radius:99px;padding:7px 14px;font-size:13px}
+.filters button.on{background:var(--bar);border-color:var(--bar);color:#fff;font-weight:500}
+.who{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--accent);display:grid;place-items:center;font-size:11.5px;font-weight:600;flex:none}
+.said{background:var(--ground);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-family:Newsreader,Georgia,serif;font-size:15px;line-height:1.6;margin-bottom:14px;white-space:pre-wrap}
+.empty{border:1px dashed var(--line-2);border-radius:var(--r);padding:34px 16px;text-align:center;color:var(--muted)}
+.foot{max-width:1180px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12.5px}
+.foot button{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;font-size:12.5px}
+
+@media (max-width:900px){
+  .wrap{flex-direction:column;padding-top:16px}
+  .col-side{width:100%}
+  .three{grid-template-columns:1fr}
+  .bar-in{gap:12px}
+  .find input{width:150px}
+  .bar nav{gap:14px}
+  .prose{font-size:16px}
+}
+@media (max-width:620px){
+  .bar-in{flex-wrap:wrap;height:auto;padding:8px 12px;gap:10px}
+  .find{order:5;width:100%}
+  .find input{width:100%}
+  .hits{width:100%}
+  .wrap{padding-left:12px;padding-right:12px}
+  .step{align-items:flex-start}
+  .chip{font-size:11.5px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="logo" href="#" id="home">Dynava</a>
+    <div class="sep"></div>
+    <nav>
+      <button id="navPath" class="on">Din väg</button>
+      <button id="navAdmin">Granskning</button>
+    </nav>
+    <div class="bar-right">
+      <div class="find">
+        <label class="sr" for="q">Sök i allt innehåll</label>
+        <input id="q" type="search" placeholder="Sök i allt innehåll" autocomplete="off">
+        <div class="hits" id="hits"></div>
+      </div>
+      <button class="bell" id="bell" aria-label="Kommentarer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H8l-4 4z"></path></svg>
+      </button>
+      <div class="me" id="me">JS</div>
+    </div>
+  </div>
+</header>
+
+<main id="view"></main>
+<div class="foot" id="foot"></div>
+
+<script>
+/* ---------- innehåll ---------- */
+var COURSES=[], IMG={}, FAQ=[];
+
+var PASS = 0.8;
+
+/* ---------- tillstånd ---------- */
+var KEY='dynava-larnaca-build';
+var S={role:'agent', page:'path', course:null, tab:'learn', draft:{}, p:{}, build:false};
+try{ var raw=localStorage.getItem(KEY); if(raw==='1') S.build=true; }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, S.build?'1':'0'); }catch(e){} syncProgress(); }
+function rec(id){ if(!S.p[id]) S.p[id]={}; return S.p[id]; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function status(i){
+  var c=COURSES[i], r=S.p[c.id]||{};
+  if(r.st) return r.st;
+  if(S.build) return 'open';
+  for(var j=0;j<i;j++){
+    var pc=COURSES[j];
+    if(!pc.test || !(pc.q||[]).length) continue;
+    var pr=S.p[pc.id]||{}; if(pr.st!=='done') return 'locked';
+  }
+  return 'open';
+}
+var LABEL={locked:'Låst', open:'Öppen', redo:'Ta om testet', wait:'Väntar på granskning', done:'Godkänd'};
+
+function icon(n){
+  var p={
+    lock:'<rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8.5 11V7.5a3.5 3.5 0 017 0V11"></path>',
+    check:'<circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path>',
+    arrow:'<path d="M5 12h13"></path><path d="M12.5 6.5L19 12l-6.5 5.5"></path>',
+    clock:'<circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path>',
+    redo:'<path d="M4 12a8 8 0 1 1 2.5 5.8"></path><path d="M4 18v-5h5"></path>',
+    x:'<circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6"></path><path d="M15 9l-6 6"></path>',
+    note:'<path d="M4 5h16v12H8l-4 4z"></path>'
+  }[n]||'';
+  return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
+}
+function chip(st){
+  if(st==='done') return '<span class="chip ok">'+icon('check')+'Godkänd</span>';
+  if(st==='open') return '<span class="chip go">'+icon('arrow')+'Fortsätt</span>';
+  if(st==='wait') return '<span class="chip wait">'+icon('clock')+'Väntar</span>';
+  if(st==='redo') return '<span class="chip redo">'+icon('redo')+'Ta om</span>';
+  return '<span class="chip">'+icon('lock')+'Låst</span>';
+}
+function unseen(){ var n=0; for(var k in S.p){ if(S.p[k].note && !S.p[k].noteSeen) n++; } return n; }
+function need(c){ return c.gate ? Math.ceil((c.q||[]).length*PASS) : 0; }
+
+/* ---------- vyer ---------- */
+function vPath(){
+  var done=0; for(var i=0;i<COURSES.length;i++){ if(status(i)==='done') done++; }
+  var h='<div class="wrap"><div class="col-main">';
+  h+='<div class="card pad" style="margin-bottom:8px">'+
+     '<div style="display:flex;align-items:center;gap:12px"><h1 style="font-size:17px;font-weight:600">Din väg in</h1>'+
+     '<span style="margin-left:auto;font-size:13px;color:var(--muted)">'+done+' av '+COURSES.length+' godkända</span></div>'+
+     '<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">Nästa steg öppnas när du klarat testet. Allt du gått igenom går att slå upp igen.</p>'+
+     '<div class="track"><i style="width:'+(done/COURSES.length*100)+'%"></i></div></div>';
+  var sec='';
+  for(var i=0;i<COURSES.length;i++){
+    var c=COURSES[i], st=status(i);
+    var info=(!c.test || !(c.q||[]).length);
+    if(c.sec!==sec){ sec=c.sec; h+='<div class="lead">'+esc(sec)+'</div>'; }
+    var cls='step'+(st==='open'?' now':'')+(st==='locked'?' off':'');
+    h+='<button class="'+cls+'" data-open="'+c.id+'"'+(st==='locked'?' disabled':'')+'>'+
+       '<span class="n">'+(i+1)+'</span>'+
+       '<span class="t"><b>'+esc(c.title)+'</b><small>'+esc(c.sum)+'</small></span>'+
+       (info && st!=='locked' ? '<span class="chip">'+icon('note')+'Information</span>' : chip(st))+'</button>';
+  }
+  h+='</div><div class="col-side">';
+  var notes=[];
+  for(var k in S.p){ if(S.p[k].note){ notes.push([k,S.p[k]]); } }
+  if(notes.length){
+    var n0=notes[0], cc=byId(n0[0]);
+    h+='<div class="note warn"><b>'+icon('note')+' Kommentar från granskaren</b>'+esc(n0[1].note)+
+       '<div style="margin-top:6px;color:var(--warn);font-size:12px">Om '+esc(cc?cc.title:n0[0])+'</div></div>';
+  }
+  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Slå upp direkt</div>'+
+     '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Mitt i ett samtal? Sök i allt, även i steg du inte kommit till.</p>'+
+     '<button class="pill" data-find="incident">Rapportera incident</button>'+
+     '<button class="pill" data-find="känslig">Känsliga uppgifter</button>'+
+     '<button class="pill" data-find="AI-verktyg">AI-verktyg</button>'+
+     '<button class="pill" data-find="registreringsnummer">Registreringsnummer</button></div>';
+  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Vem du frågar</div>'+
+     '<div style="font-size:13px;line-height:1.6;color:var(--muted)">Dataskydd och GDPR<br><a href="mailto:gdpr@dynava.com">gdpr@dynava.com</a>'+
+     '<div style="margin-top:7px">Schema och frånvaro<br>Närmaste chef</div></div></div>';
+  h+='</div></div>';
+  return h;
+}
+
+function byId(id){ for(var i=0;i<COURSES.length;i++){ if(COURSES[i].id===id) return COURSES[i]; } return null; }
+function idxOf(id){ for(var i=0;i<COURSES.length;i++){ if(COURSES[i].id===id) return i; } return -1; }
+
+function blocks(list, base){
+  base=base||0; var h='';
+  for(var li=0;li<list.length;li++){
+    var b=list[li], i=base+li;
+    if(b.t==='h2') h+='<h2 id="s'+i+'">'+esc(b.x)+'</h2>';
+    else if(b.t==='p') h+='<p>'+b.x+'</p>';
+    else if(b.t==='pull') h+='<div class="pull"><div class="k">'+esc(b.k)+'</div><p>'+esc(b.x)+'</p></div>';
+    else if(b.t==='link'){
+      var lc=byId(b.x), lix=idxOf(b.x), lst=lix>-1?status(lix):'locked';
+      h+='<button class="xlink" data-open="'+b.x+'"'+(lst==='locked'?' data-locked="1"':'')+'>'+
+         '<span class="xk">'+esc(b.k||'Läs mer')+'</span>'+
+         '<span class="xt">'+esc(lc?lc.title:b.x)+'</span>'+
+         '<span class="xd">'+esc(b.d||'')+'</span>'+
+         (lst==='locked'?'<span class="xl">Låst tills du kommit hit</span>':'')+
+         '</button>';
+    }
+    else if(b.t==='ex'){
+      h+='<div class="exer"><div class="k">Övning</div><p class="exq">'+esc(b.q)+'</p>'+
+         '<button class="btn" data-reveal="ex'+i+'">Visa hur du gör</button>'+
+         '<ol class="exs" id="ex'+i+'" style="display:none">';
+      for(var z=0;z<b.steps.length;z++) h+='<li>'+esc(b.steps[z])+'</li>';
+      h+='<li class="stop">Stopp. Nu har du ett urval att arbeta vidare med.</li></ol></div>';
+    }
+    else if(b.t==='img'){
+      h+='<figure style="margin:18px 0"><img data-imgkey="'+esc(b.x)+'"'+(IMG[b.x]?' src="'+IMG[b.x]+'"':'')+' alt="'+esc(b.cap||'')+'" '+
+         'style="max-width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px;background:#fff">'+
+         (b.cap?'<figcaption style="font-family:\'IBM Plex Sans\',sans-serif;font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.5">'+esc(b.cap)+'</figcaption>':'')+
+         '</figure>';
+    }
+    else if(b.t==='three'){
+      h+='<div class="three">';
+      for(var j=0;j<b.x.length;j++) h+='<div><b>'+esc(b.x[j][0])+'</b><span>'+esc(b.x[j][1])+'</span></div>';
+      h+='</div>';
+    }
+  }
+  return h;
+}
+
+function vCourse(){
+  var c=byId(S.course), i=idxOf(S.course), st=status(i), r=S.p[c.id]||{};
+  var h='<div class="wrap"><div class="col-main">';
+  h+='<div class="crumb"><button data-go="path">Din väg</button><span>/</span><span>Steg '+(i+1)+'</span><span>/</span><span style="color:var(--ink)">'+esc(c.title)+'</span></div>';
+  h+='<h1 style="font-family:Newsreader,Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.012em">'+esc(c.title)+'</h1>';
+  h+='<p style="margin:5px 0 0;font-size:14.5px;color:var(--muted)">'+esc(c.sum)+'</p>';
+  if(CAN_EDIT) h+='<div style="margin-top:12px"><button class="btn'+(EDITMODE?' main':'')+'" id="edtoggle">'+(EDITMODE?'Redigeringsläge på, klicka för att avsluta':'Redigera kursen')+'</button></div>';
+
+  if(r.note && !r.noteSeen){
+    h+='<div class="note warn" style="margin-top:14px"><b>'+icon('note')+' Kommentar från granskaren</b>'+esc(r.note)+'</div>';
+    r.noteSeen=true; save();
+  } else if(r.note){
+    h+='<div class="note warn" style="margin-top:14px"><b>'+icon('note')+' Kommentar från granskaren</b>'+esc(r.note)+'</div>';
+  }
+
+  if(c.quick){
+    h+='<div class="tabs"><button data-tab="learn" class="'+(S.tab==='learn'?'on':'')+'">Lär dig</button>'+
+       '<button data-tab="quick" class="'+(S.tab==='quick'?'on':'')+'">Slå upp</button></div>';
+  } else { h+='<div style="height:18px"></div>'; }
+
+  if(c.quick && S.tab==='quick'){
+    h+='<div class="card pad quick">';
+    for(var j=0;j<c.quick.length;j++) h+='<div><b>'+esc(c.quick[j][0])+'.</b> '+esc(c.quick[j][1])+'</div>';
+    h+='</div>';
+  } else {
+    if(EDITMODE && CAN_EDIT) h+='<div class="prose">'+editableBody(c)+'</div>';
+    else h+='<div class="prose">'+blocks(c.body)+'</div>';
+  }
+
+  h+='<div style="margin:26px 0 0;padding-top:20px;border-top:1px solid var(--line)" class="row">';
+  if(!c.test || !(c.q||[]).length){
+    h+='<button class="btn" data-go="path">Tillbaka till din väg</button>';
+  } else if(st==='wait'){
+    h+='<span class="chip wait">'+icon('clock')+'Väntar på granskning</span><button class="btn" data-go="path">Tillbaka</button>';
+  } else if(st==='done'){
+    h+='<span class="chip ok">'+icon('check')+'Godkänd</span><button class="btn" data-test="'+c.id+'">Gå igenom igen</button><button class="btn" data-go="path">Tillbaka</button>';
+  } else {
+    h+='<button class="btn main" data-test="'+c.id+'">'+(st==='redo'?'Gå igenom igen':'Gör genomgången')+'</button>'+
+       '<span style="font-size:13px;color:var(--muted)">'+(c.q.length+(c.free?1:0))+' frågor</span>';
+  }
+  h+='</div>';
+
+  h+='</div><div class="col-side">';
+  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Om kursen</div><div class="facts">'+
+     '<div><span style="color:var(--muted)">Frågor</span><span>'+(c.q?c.q.length+(c.free?1:0):0)+'</span></div>'+
+     '<div><span style="color:var(--muted)">Godkänt vid</span><span>'+Math.round(PASS*100)+' procent</span></div>'+
+     '<div><span style="color:var(--muted)">Omtag</span><span>Obegränsat</span></div>'+
+     '<div><span style="color:var(--muted)">Räknas</span><span>Bästa försöket</span></div></div></div>';
+  if(c.gate){
+    h+='<div class="note warn"><b>Det här steget granskas</b>Du får resultatet direkt, men nästa steg öppnas när utbildningsledaren godkänt ditt fritextsvar.</div>';
+  }
+  if(S.tab==='learn' && c.body){
+    var toc='';
+    for(var k=0;k<c.body.length;k++) if(c.body[k].t==='h2') toc+='<div><a href="#s'+k+'">'+esc(c.body[k].x)+'</a></div>';
+    if(toc) h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">I den här kursen</div><div style="font-size:13px;line-height:1.95">'+toc+'</div></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function vTest(){
+  var c=byId(S.course);
+  var d=S.draft[c.id]||(S.draft[c.id]={a:{}, free:''});
+  var h='<div class="wrap"><div class="col-main" style="max-width:780px;margin:0 auto">';
+  h+='<div class="crumb"><button data-go="path">Din väg</button><span>/</span><button data-open="'+c.id+'">'+esc(c.title)+'</button><span>/</span><span style="color:var(--ink)">Test</span></div>';
+  h+='<h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Test: '+esc(c.title)+'</h1>';
+  h+='<p style="margin:0 0 18px;font-size:13.5px;color:var(--muted)">Flervalsfrågorna rättas direkt. Fritextsvaret läses av utbildningsledaren.</p>';
+  for(var i=0;i<c.q.length;i++){
+    var q=c.q[i], picked=d.a[i]||[];
+    h+='<div class="q"><div class="qt">'+(i+1)+'. '+esc(q.p)+(q.multi?' <span style="font-weight:400;color:var(--muted)">(flera svar)</span>':'')+'</div>';
+    for(var j=0;j<q.o.length;j++){
+      var on=picked.indexOf(j)>-1;
+      h+='<button class="opt'+(on?' sel':'')+'" data-pick="'+i+'-'+j+'"><span class="box'+(q.multi?'':' rd')+'"></span><span>'+esc(q.o[j])+'</span></button>';
+    }
+    h+='</div>';
+  }
+  if(c.free){
+    h+='<div class="q"><div class="qt">'+(c.q.length+1)+'. '+esc(c.free)+'</div>'+
+       '<textarea id="free" placeholder="Skriv ditt svar">'+esc(d.free)+'</textarea></div>';
+  }
+  h+='<div class="row" style="margin-top:16px;justify-content:flex-end">'+
+     '<button class="btn" data-open="'+c.id+'">Avbryt</button>'+
+     '<button class="btn main" id="send">Skicka in</button></div>';
+  h+='</div></div>';
+  return h;
+}
+
+function vResult(){
+  var c=byId(S.course), r=S.p[c.id]||{}, i=idxOf(S.course);
+  var total=c.q.length, miss=total-r.right;
+  var h='<div class="wrap"><div class="col-main" style="max-width:780px;margin:0 auto">';
+  h+='<div class="crumb"><button data-go="path">Din väg</button><span>/</span><button data-open="'+c.id+'">'+esc(c.title)+'</button><span>/</span><span style="color:var(--ink)">Genomgång</span></div>';
+  h+='<div class="card pad" style="margin-bottom:10px">'+
+     '<h1 style="font-size:21px;font-weight:600;margin-bottom:6px">Låt oss gå igenom det här igen</h1>'+
+     '<p style="margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.6">'+
+     (miss===0
+       ? 'Alla '+total+' satt. Inget att repetera den här gången.'
+       : (total-miss)+' av '+total+' satt. '+(miss===1?'En är värd en ny titt, den ligger öppen nedan.':miss+' är värda en ny titt, de ligger öppna nedan.'))+
+     '</p>'+
+     '<div class="row"><button class="btn" data-test="'+c.id+'">Gå igenom igen</button>'+
+     '<button class="btn" data-go="path">Tillbaka till din väg</button></div></div>';
+  if(c.free){
+    h+='<div class="note warn" style="margin-bottom:18px"><b>'+icon('clock')+' Ditt skrivna svar är inskickat</b>'+
+       (c.gate
+         ? 'Utbildningsledaren läser det och hör av sig. Nästa steg öppnas när det är godkänt, så du kan gå vidare med annat under tiden.'
+         : 'Utbildningsledaren läser det och hör av sig med feedback. Du går vidare direkt.')+'</div>';
+  }
+  var wrong=[], right=[];
+  for(var k=0;k<c.q.length;k++){
+    var picked=(r.answers&&r.answers[k])||[];
+    (same(picked,c.q[k].c)?right:wrong).push(k);
+  }
+  if(wrong.length){
+    h+='<div class="lead">Värt en ny titt</div>';
+    for(var w=0;w<wrong.length;w++) h+=qCard(c,wrong[w],r,true);
+  }
+  if(right.length){
+    h+='<div class="lead">Det som satt</div>';
+    h+='<button class="btn" id="showRight" style="margin-bottom:8px">Visa de '+right.length+' du hade rätt på</button>';
+    h+='<div id="rightBox" style="display:none">';
+    for(var g=0;g<right.length;g++) h+=qCard(c,right[g],r,false);
+    h+='</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function qCard(c,k,r,open){
+  var q=c.q[k], picked=(r.answers&&r.answers[k])||[];
+  var h='<div class="q"'+(open?' style="border-color:var(--warn-line)"':'')+'>'+
+     '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:10px">'+
+     (open?'<span class="chip wait">'+icon('redo')+'Värt en ny titt</span>':'<span class="chip ok">'+icon('check')+'Satt</span>')+
+     '<span class="qt" style="flex:1 1 auto;min-width:0;margin:0">'+esc(q.p)+'</span></div>';
+  for(var j=0;j<q.o.length;j++){
+    var isC=q.c.indexOf(j)>-1, isP=picked.indexOf(j)>-1, cls='opt';
+    if(isC) cls+=' good';
+    h+='<div class="'+cls+'" style="cursor:default"><span class="box'+(q.multi?'':' rd')+'" style="'+(isC?'border-color:currentColor':'')+'"></span><span>'+esc(q.o[j])+'</span>'+
+       (isP&&!isC?'<span class="mark" style="color:var(--muted)">Du valde den här</span>':'')+
+       (isC?'<span class="mark" style="color:var(--ok)">Så gör du</span>':'')+'</div>';
+  }
+  h+='<p class="why">'+esc(q.w)+'</p></div>';
+  return h;
+}
+
+function vFaq(){
+  var h='<div class="wrap"><div class="col-main" style="max-width:820px;margin:0 auto">';
+  h+='<h1 style="font-size:22px;font-weight:600">FAQ</h1>';
+  h+='<p style="margin:5px 0 18px;font-size:13.5px;color:var(--muted)">Fel som uppstår, varför de uppstår och hur de hanteras. En post per problem.</p>';
+  for(var i=0;i<FAQ.length;i++){
+    var f=FAQ[i];
+    h+='<div class="card pad" style="margin-bottom:10px">';
+    h+='<div class="row" style="margin-bottom:10px"><span class="chip">'+esc(f.area)+'</span><h2 style="font-size:17px;font-weight:600;margin:0">'+esc(f.title)+'</h2></div>';
+    h+='<div class="lead">Möjliga orsaker</div><ul style="margin:4px 0 12px;padding-left:18px;font-size:14px;line-height:1.6">';
+    for(var a=0;a<f.cause.length;a++) h+='<li>'+esc(f.cause[a])+'</li>';
+    h+='</ul>';
+    h+='<div class="lead">Det här behöver du veta</div><p style="margin:4px 0 12px;font-size:14px;line-height:1.6">'+esc(f.agent)+'</p>';
+    h+='<div class="lead">Vad du gör och säger</div><ul style="margin:4px 0 12px;padding-left:18px;font-size:14px;line-height:1.6">';
+    for(var b=0;b<f.say.length;b++) h+='<li>'+esc(f.say[b])+'</li>';
+    h+='</ul>';
+    h+='<div class="lead">Undvik</div><ul style="margin:4px 0 12px;padding-left:18px;font-size:14px;line-height:1.6">';
+    for(var c=0;c<f.dont.length;c++) h+='<li>'+esc(f.dont[c])+'</li>';
+    h+='</ul>';
+    h+='<div class="note warn" style="margin-bottom:8px"><b>iBoxens ståndpunkt</b>'+esc(f.stance)+'</div>';
+    h+='<div class="note ok" style="margin-bottom:10px"><b>Tillfällig lösning</b>'+esc(f.temp)+'</div>';
+    h+='<p style="margin:0;font-size:12px;color:var(--muted)">Källa: '+esc(f.source)+'. '+esc(f.checked)+'.</p>';
+    h+='</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function same(a,b){ if(a.length!==b.length) return false; var x=a.slice().sort(), y=b.slice().sort(); for(var i=0;i<x.length;i++) if(x[i]!==y[i]) return false; return true; }
+
+function vAdmin(){
+  if(!CAN_EDIT) return '<div class="wrap"><div class="col-main"><div class="empty">Granskningen är bara för utbildningsledare.</div></div></div>';
+  var h='<div class="wrap"><div class="col-main" style="max-width:860px;margin:0 auto">';
+  h+='<h1 style="font-size:22px;font-weight:600">Granskning</h1>';
+  h+='<p style="margin:5px 0 18px;font-size:13.5px;color:var(--muted)">Flervalsfrågorna är redan rättade. Här läser du fritextsvaren och skriver feedback. Bara steg med spärr väntar på ditt godkännande.</p>';
+  var rows=ALLP.filter(function(r){ return r.free_text && byId(r.course_id); });
+  rows.sort(function(x,y){ return (x.status==='wait'?0:1)-(y.status==='wait'?0:1) || String(y.updated_at).localeCompare(String(x.updated_at)); });
+  if(!rows.length){ h+='<div class="empty">Inget inskickat än.</div>'; }
+  for(var k=0;k<rows.length;k++){
+    var r=rows[k], c=byId(r.course_id), waiting=(r.status==='wait'), key=r.email+'|'+r.course_id, ini=r.email.slice(0,2).toUpperCase();
+    var tot=(c.q||[]).length, rc=r.right_count||0;
+    h+='<div class="card pad" style="margin-bottom:8px">'+
+       '<div class="who"><span class="av">'+esc(ini)+'</span>'+
+       '<span><b style="display:block;font-size:14.5px">'+esc(r.email)+'</b><small style="color:var(--muted);font-size:12.5px">'+esc(c.title)+'</small></span>'+
+       '<span class="chip">'+rc+' av '+tot+' satt</span>'+
+       (waiting?'<span class="chip wait">'+icon('lock')+'Spärr, nästa steg låst</span>':'<span class="chip ok">'+icon('check')+'Redan vidare</span>')+
+       '<span style="margin-left:auto;font-size:12.5px;color:var(--muted)">'+esc(new Date(r.updated_at).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}))+'</span></div>';
+    h+='<div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px">Fritextfråga</div>';
+    h+='<p style="margin:0 0 10px;font-size:14px;line-height:1.55">'+esc(c.free)+'</p>';
+    h+='<div class="said">'+esc(r.free_text)+'</div>';
+    h+='<textarea data-cm="'+esc(key)+'" style="min-height:70px" placeholder="Skriv vad som var bra och vad som saknas">'+esc(r.note||'')+'</textarea>';
+    h+='<div class="row" style="justify-content:flex-end;margin-top:12px">';
+    if(waiting) h+='<button class="btn" data-aback="'+esc(key)+'">Skicka tillbaka</button><button class="btn main" data-aok="'+esc(key)+'">Godkänn och lås upp</button>';
+    else h+='<button class="btn main" data-anote="'+esc(key)+'">Spara feedback</button>';
+    h+='</div></div>';
+  }
+  h+='<div class="card pad" style="margin-top:22px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Innehåll</div>'+
+     '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Exportera sparar allt innehåll som en fil. Importera läser in en sådan fil och ersätter kurser och bilder med samma namn.</p>'+
+     '<div class="row"><button class="btn" id="doExport">Exportera</button><label class="btn" style="cursor:pointer">Importera<input type="file" id="doImport" accept="application/json" style="display:none"></label><span id="ioMsg" style="font-size:13px;color:var(--muted)"></span></div></div>';
+  h+='</div></div>';
+  return h;
+}
+
+/* ---------- innehåll och redigering ---------- */
+var SB_URL='https://wnkkjraapbichqcwibia.supabase.co', SB_KEY='sb_publishable_oetviK7tf4pFrnW7HVr9Jg_mYAvC_eM', ALLOWED_DOMAIN='dynava.com';
+var sb=null, ME='', CAN_EDIT=false, EDITMODE=false, EDITING=null, LOADED=false, LOADERR='', NEEDLOGIN=false, ALLP=[], SYNCED={};
+function toEdit(x){ return String(x||'').replace(/<strong>([\s\S]*?)<\/strong>/g,'**$1**').replace(/<[^>]+>/g,''); }
+function fromEdit(t){ return esc(String(t||'')).replace(/\*\*([\s\S]+?)\*\*/g,'<strong>$1</strong>'); }
+function str(v){ return typeof v==='string' ? v.slice(0,4000) : ''; }
+function cleanP(x){ return fromEdit(toEdit(x)); }
+function sanitizeCourse(d){
+  var body=Array.isArray(d.body)?d.body:[];
+  body=body.map(function(b){ var o=Object.assign({},b); if(o.t==='p') o.x=cleanP(o.x); return o; });
+  return {id:d.id, order:+d.ord||0, sec:str(d.sec), title:str(d.title), sum:str(d.sum), test:!!d.test, gate:!!d.gate,
+          body:body, quick:Array.isArray(d.quick)?d.quick:[], q:Array.isArray(d.q)?d.q:[], free:str(d.free)};
+}
+function loadImages(){
+  if(!sb) return;
+  document.querySelectorAll('img[data-imgkey]').forEach(function(el){
+    var k=el.getAttribute('data-imgkey');
+    if(IMG[k]){ if(!el.getAttribute('src')) el.src=IMG[k]; return; }
+    if(loadImages.pending[k]) return; loadImages.pending[k]=true;
+    sb.from('images').select('data').eq('key',k).maybeSingle().then(function(res){
+      var d=res.data;
+      if(d && typeof d.data==='string' && d.data.indexOf('data:image/')===0){
+        IMG[k]=d.data; document.querySelectorAll('img[data-imgkey="'+k+'"]').forEach(function(x){ x.src=IMG[k]; });
+      } else loadImages.pending[k]=false;
+    });
+  });
+}
+loadImages.pending={};
+
+/* framsteg */
+function rowFromRec(cid, r){
+  return {email:ME, course_id:cid, status:r.st||'open', right_count:(typeof r.right==='number')?r.right:null,
+          answers:r.answers||null, free_text:r.free||null, note:r.note||null, note_seen:r.noteSeen!==false};
+}
+function recFromRow(x){
+  return {st:x.status, right:x.right_count, answers:x.answers, free:x.free_text||'', note:x.note||'', noteSeen:x.note_seen,
+          when:x.updated_at?new Date(x.updated_at).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}):''};
+}
+function syncProgress(){
+  if(!sb||!ME) return;
+  Object.keys(S.p).forEach(function(cid){
+    var row=rowFromRec(cid, S.p[cid]), sig=JSON.stringify(row);
+    if(SYNCED[cid]===sig) return; SYNCED[cid]=sig;
+    row.updated_at=new Date().toISOString();
+    sb.from('progress').upsert(row).then(function(res){ if(res.error){ SYNCED[cid]=null; alert('Framsteget kunde inte sparas. '+res.error.message); } });
+  });
+}
+function loadProgress(){
+  return sb.from('progress').select('*').then(function(res){
+    var rows=res.data||[]; ALLP=rows;
+    S.p={}; SYNCED={};
+    rows.filter(function(x){return x.email===ME;}).forEach(function(x){ S.p[x.course_id]=recFromRow(x); SYNCED[x.course_id]=JSON.stringify(rowFromRec(x.course_id,S.p[x.course_id])); });
+  });
+}
+function adminUpdate(key, patch){
+  var p=key.split('|'), email=p[0], cid=p[1];
+  patch.updated_at=new Date().toISOString();
+  sb.from('progress').update(patch).eq('email',email).eq('course_id',cid).then(function(res){
+    if(res.error){ alert('Kunde inte spara. '+res.error.message); return; }
+    loadProgress().then(function(){ render.keep=true; render(); });
+  });
+}
+document.addEventListener('click', function(e){
+  var t=e.target.closest('[data-aok],[data-aback],[data-anote],#doExport,#logout');
+  if(!t) return;
+  if(t.id==='logout'){ sb.auth.signOut().then(function(){ location.reload(); }); return; }
+  if(t.id==='doExport'){ exportAll(); return; }
+  var key=t.getAttribute('data-aok')||t.getAttribute('data-aback')||t.getAttribute('data-anote');
+  var ta=document.querySelector('textarea[data-cm="'+CSS.escape(key)+'"]'), cm=ta?ta.value:'';
+  if(t.hasAttribute('data-aok')) adminUpdate(key,{status:'done', note:cm, note_seen:false});
+  else if(t.hasAttribute('data-aback')){ if(!cm.trim()){ alert('Skriv en kommentar innan du skickar tillbaka.'); return; } adminUpdate(key,{status:'redo', note:cm, note_seen:false}); }
+  else adminUpdate(key,{note:cm, note_seen:false});
+});
+
+/* export och import */
+function exportAll(){
+  var msg=document.getElementById('ioMsg'); if(msg) msg.textContent='Hämtar...';
+  Promise.all([sb.from('courses').select('*'), sb.from('images').select('key,data')]).then(function(r){
+    var out={exported:new Date().toISOString(), courses:r[0].data||[], images:{}};
+    (r[1].data||[]).forEach(function(x){ out.images[x.key]=x.data; });
+    var blob=new Blob([JSON.stringify(out)],{type:'application/json'}), a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='dynava-onboarding-export.json'; document.body.appendChild(a); a.click(); a.remove();
+    if(msg) msg.textContent='Klart.';
+  });
+}
+document.addEventListener('change', function(e){
+  if(e.target.id!=='doImport' || !e.target.files[0]) return;
+  var msg=document.getElementById('ioMsg'), rd=new FileReader();
+  rd.onload=async function(){
+    try{
+      var d=JSON.parse(rd.result);
+      var courses=(d.courses||[]).map(function(c){ return {id:c.id, ord:+(c.ord!=null?c.ord:c.order)||0, sec:c.sec||'', title:c.title||'', sum:c.sum||'', test:!!c.test, gate:!!c.gate, body:c.body||[], quick:c.quick||[], q:c.q||[], free:c.free||'', updated_at:new Date().toISOString()}; });
+      if(!confirm('Importera '+courses.length+' kurser och '+Object.keys(d.images||{}).length+' bilder? Kurser och bilder med samma namn ersätts.')) return;
+      msg.textContent='Importerar kurser...';
+      var r1=await sb.from('courses').upsert(courses); if(r1.error) throw r1.error;
+      var keys=Object.keys(d.images||{});
+      for(var i=0;i<keys.length;i+=4){
+        msg.textContent='Importerar bilder '+Math.min(i+4,keys.length)+' av '+keys.length+'...';
+        var batch=keys.slice(i,i+4).map(function(k){ return {key:k, data:d.images[k]}; });
+        var r2=await sb.from('images').upsert(batch); if(r2.error) throw r2.error;
+      }
+      msg.textContent='Klart. Laddar om...'; setTimeout(function(){ location.reload(); }, 800);
+    }catch(err){ msg.textContent='Importen misslyckades: '+(err.message||err); }
+  };
+  rd.readAsText(e.target.files[0]);
+});
+
+/* redigering */
+function editForm(b){
+  var h='<div class="edbox"><div class="edk">Redigerar</div>';
+  function inp(name,val,big){ return big ? '<textarea data-f="'+name+'" rows="5">'+esc(val)+'</textarea>' : '<input data-f="'+name+'" value="'+esc(val)+'">'; }
+  if(b.t==='p'){ h+='<label>Text</label>'+inp('md',toEdit(b.x),true)+'<div class="edhint">Två stjärnor runt ord gör dem feta: **så här**</div>'; }
+  else if(b.t==='h2'){ h+='<label>Rubrik</label>'+inp('x',b.x); }
+  else if(b.t==='pull'){ h+='<label>Rubrik</label>'+inp('k',b.k)+'<label>Text</label>'+inp('x',b.x,true); }
+  else if(b.t==='img'){ h+='<label>Bildtext</label>'+inp('cap',b.cap||'',true)+'<div class="edhint">Bilden byts inte här, bara texten under den.</div>'; }
+  else if(b.t==='link'){ h+='<label>Etikett</label>'+inp('k',b.k||'')+'<label>Beskrivning</label>'+inp('d',b.d||'',true); }
+  else if(b.t==='three'){ for(var j=0;j<b.x.length;j++){ h+='<label>Ruta '+(j+1)+', rubrik</label>'+inp('t'+j+'a',b.x[j][0])+'<label>Ruta '+(j+1)+', text</label>'+inp('t'+j+'b',b.x[j][1],true); } }
+  else if(b.t==='ex'){ h+='<label>Fråga</label>'+inp('q',b.q)+'<label>Steg, ett per rad</label>'+inp('steps',(b.steps||[]).join('\n'),true); }
+  h+='<div class="row" style="margin-top:10px"><button class="btn main" data-esave="'+esc(b.id)+'">Spara</button><button class="btn" data-ecancel="1">Avbryt</button>'+
+     '<button class="btn" data-eundo="'+esc(b.id)+'" style="margin-left:auto">Ångra senaste ändring</button></div></div>';
+  return h;
+}
+function editableBody(c){
+  var h='';
+  for(var i=0;i<c.body.length;i++){
+    var b=c.body[i];
+    if(EDITING===b.id){ h+=editForm(b); continue; }
+    h+='<div class="edwrap"><button class="edpen" data-edit="'+esc(b.id)+'">'+icon('note')+' Redigera</button>'+blocks([b], i)+'</div>';
+  }
+  return h;
+}
+function collectForm(orig){
+  var box=document.querySelector('.edbox'); if(!box) return null;
+  function v(n){ var el=box.querySelector('[data-f="'+n+'"]'); return el?el.value:''; }
+  var b=Object.assign({}, orig);
+  if(orig.t==='p') b.x=fromEdit(v('md'));
+  else if(orig.t==='h2') b.x=v('x');
+  else if(orig.t==='pull'){ b.k=v('k'); b.x=v('x'); }
+  else if(orig.t==='img') b.cap=v('cap');
+  else if(orig.t==='link'){ b.k=v('k'); b.d=v('d'); }
+  else if(orig.t==='three'){ b.x=orig.x.map(function(_,j){ return [v('t'+j+'a'), v('t'+j+'b')]; }); }
+  else if(orig.t==='ex'){ b.q=v('q'); b.steps=v('steps').split('\n').map(function(x){return x.trim();}).filter(Boolean); }
+  return b;
+}
+async function saveBlock(c, nb){
+  var idx=c.body.findIndex(function(b){ return b.id===nb.id; }); if(idx<0) return;
+  var old=c.body[idx]; if(JSON.stringify(old)===JSON.stringify(nb)) return;
+  var h=await sb.from('course_history').insert({course_id:c.id, block_id:nb.id, block:old, changed_by:ME});
+  if(h.error){ alert('Ändringen kunde inte sparas. '+h.error.message); return; }
+  var body=c.body.slice(); body[idx]=nb;
+  var u=await sb.from('courses').update({body:body, updated_at:new Date().toISOString()}).eq('id',c.id);
+  if(u.error){ alert('Ändringen kunde inte sparas. '+u.error.message); return; }
+  c.body=body; render.keep=true; render();
+}
+async function undoBlock(c, bid){
+  var r=await sb.from('course_history').select('id,block').eq('course_id',c.id).eq('block_id',bid).order('changed_at',{ascending:false}).limit(1);
+  if(r.error){ alert(r.error.message); return; }
+  if(!r.data || !r.data.length){ alert('Det finns ingen tidigare version av det här stycket.'); return; }
+  var prev=r.data[0].block, idx=c.body.findIndex(function(b){ return b.id===bid; }); if(idx<0) return;
+  var body=c.body.slice(); body[idx]=prev;
+  var u=await sb.from('courses').update({body:body, updated_at:new Date().toISOString()}).eq('id',c.id);
+  if(u.error){ alert(u.error.message); return; }
+  await sb.from('course_history').delete().eq('id', r.data[0].id);
+  c.body=body; render.keep=true; render();
+}
+document.addEventListener('click', function(e){
+  var t=e.target.closest('[data-edit],[data-esave],[data-ecancel],[data-eundo],#edtoggle');
+  if(!t) return;
+  var c=byId(S.course); if(!c) return;
+  if(t.id==='edtoggle'){ EDITMODE=!EDITMODE; EDITING=null; render.keep=true; return render(); }
+  if(t.hasAttribute('data-edit')){ EDITING=t.getAttribute('data-edit'); render.keep=true; render(); var bx=document.querySelector('.edbox'); if(bx) bx.scrollIntoView({block:'center'}); return; }
+  if(t.hasAttribute('data-ecancel')){ EDITING=null; render.keep=true; return render(); }
+  if(t.hasAttribute('data-esave')){
+    var bid=t.getAttribute('data-esave'), orig=c.body.find(function(b){return b.id===bid;});
+    var nb=orig?collectForm(orig):null; EDITING=null; if(nb) saveBlock(c, nb); else { render.keep=true; render(); } return;
+  }
+  if(t.hasAttribute('data-eundo')){
+    if(!confirm('Återställ stycket till versionen före den senaste ändringen?')) return;
+    EDITING=null; undoBlock(c, t.getAttribute('data-eundo')); return;
+  }
+});
+
+/* inloggning */
+function vLogin(){
+  return '<div class="wrap"><div class="col-main" style="max-width:420px;margin:40px auto">'+
+    '<div class="card pad"><h1 style="font-size:20px;font-weight:600;margin-bottom:6px">Logga in</h1>'+
+    '<p style="margin:0 0 14px;font-size:13.5px;color:var(--muted)">Skriv din Dynava-mejl. Du får en inloggningslänk som gäller en gång.</p>'+
+    '<input id="loginEmail" type="email" placeholder="fornamn.efternamn@'+ALLOWED_DOMAIN+'" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
+    '<button class="btn main" id="loginSend" style="width:100%">Skicka inloggningslänk</button>'+
+    '<p id="loginMsg" style="margin:12px 0 0;font-size:13px;color:var(--muted)"></p></div></div></div>';
+}
+document.addEventListener('click', function(e){
+  if(!e.target || e.target.id!=='loginSend') return;
+  var em=(document.getElementById('loginEmail').value||'').trim().toLowerCase(), msg=document.getElementById('loginMsg');
+  if(!em || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Använd din adress som slutar på @'+ALLOWED_DOMAIN+'.'; return; }
+  e.target.disabled=true; msg.textContent='Skickar...';
+  sb.auth.signInWithOtp({email:em, options:{emailRedirectTo: location.origin+location.pathname}}).then(function(res){
+    e.target.disabled=false;
+    msg.textContent = res.error ? ('Det gick inte att skicka. '+res.error.message) : 'Kolla din mejl och klicka på länken.';
+  });
+});
+
+async function boot(){
+  try{
+    if(!window.supabase){ LOADERR='Sidan kunde inte ansluta.'; return render(); }
+    sb=window.supabase.createClient(SB_URL, SB_KEY);
+    var ses=(await sb.auth.getSession()).data.session;
+    if(!ses){ NEEDLOGIN=true; return render(); }
+    ME=String(ses.user.email||'').toLowerCase();
+    var m=await sb.from('members').select('role,tracks').eq('email',ME).maybeSingle();
+    if(!m.data){ LOADERR='Din adress '+ME+' finns inte på listan. Kontakta din utbildningsledare.'; return render(); }
+    CAN_EDIT=(m.data.role==='admin');
+    var c=await sb.from('courses').select('*').order('ord');
+    if(c.error){ LOADERR='Innehållet kunde inte laddas. '+c.error.message; return render(); }
+    COURSES=(c.data||[]).map(sanitizeCourse);
+    await loadProgress();
+    LOADED=true; buildIdx(); render();
+  }catch(err){ LOADERR='Något gick fel. '+(err.message||err); render(); }
+}
+boot();
+
+/* ---------- sök ---------- */
+var IDX=[];
+function buildIdx(){ IDX=[];
+  for(var i=0;i<COURSES.length;i++){
+    var c=COURSES[i];
+    IDX.push({t:c.title, s:c.sum, txt:(c.title+' '+c.sum).toLowerCase(), id:c.id, i:i});
+    if(c.quick) for(var j=0;j<c.quick.length;j++)
+      IDX.push({t:c.quick[j][0], s:c.quick[j][1], txt:(c.quick[j][0]+' '+c.quick[j][1]).toLowerCase(), id:c.id, i:i, quick:true});
+    if(c.body) for(var k=0;k<c.body.length;k++){
+      var b=c.body[k];
+      if(b.t==='h2') IDX.push({t:b.x, s:'Avsnitt i '+c.title, txt:b.x.toLowerCase(), id:c.id, i:i});
+      if(b.t==='pull') IDX.push({t:b.k, s:b.x, txt:(b.k+' '+b.x).toLowerCase(), id:c.id, i:i});
+      if(b.t==='p'){ var plain=b.x.replace(/<[^>]+>/g,''); IDX.push({t:plain.slice(0,58)+(plain.length>58?'…':''), s:c.title, txt:plain.toLowerCase(), id:c.id, i:i}); }
+      if(b.t==='three') for(var m=0;m<b.x.length;m++)
+        IDX.push({t:b.x[m][0], s:b.x[m][1], txt:(b.x[m][0]+' '+b.x[m][1]).toLowerCase(), id:c.id, i:i});
+    }
+    if(c.q) for(var n=0;n<c.q.length;n++)
+      IDX.push({t:c.q[n].p, s:'Testfråga i '+c.title, txt:(c.q[n].p+' '+c.q[n].o.join(' ')).toLowerCase(), id:c.id, i:i});
+  }
+}
+
+function runFind(v){
+  var box=document.getElementById('hits');
+  v=(v||'').trim().toLowerCase();
+  if(v.length<2){ box.classList.remove('on'); box.innerHTML=''; return; }
+  var out=[], seen={};
+  for(var i=0;i<IDX.length && out.length<9;i++){
+    if(IDX[i].txt.indexOf(v)>-1){
+      var key=IDX[i].t+IDX[i].id; if(seen[key]) continue; seen[key]=1;
+      out.push(IDX[i]);
+    }
+  }
+  if(!out.length){ box.innerHTML='<div class="hit"><small>Ingen träff på '+esc(v)+'</small></div>'; box.classList.add('on'); return; }
+  var h='';
+  for(var j=0;j<out.length;j++){
+    var o=out[j];
+    if(o.faq){ h+='<button class="hit" data-go="faq"><b>'+esc(o.t)+'</b><small>'+esc(o.s)+'</small></button>'; continue; }
+    var locked=status(o.i)==='locked';
+    h+='<button class="hit'+(locked?' off':'')+'" data-hit="'+o.id+(o.quick?'|quick':'')+'">'+
+       '<b>'+esc(o.t)+'</b><small>'+esc(o.s)+'</small>'+
+       '<span class="where">'+esc(COURSES[o.i].title)+(locked?' — låst tills du kommit hit':'')+'</span></button>';
+  }
+  box.innerHTML=h; box.classList.add('on');
+}
+
+/* ---------- rita ---------- */
+function render(){
+  document.getElementById('navPath').className = (S.page==='admin'||S.page==='faq')?'':'on';
+  document.getElementById('navAdmin').className = S.page==='admin'?'on':'';
+  document.getElementById('me').textContent = (ME||'?').slice(0,2).toUpperCase();
+  document.getElementById('navAdmin').style.display = CAN_EDIT?'':'none';
+  var n=unseen(), b=document.getElementById('bell');
+  b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H8l-4 4z"></path></svg>'+(n?'<span>'+n+'</span>':'');
+  var v=document.getElementById('view');
+  if(NEEDLOGIN){ v.innerHTML=vLogin(); document.getElementById('foot').innerHTML=''; return; }
+  if(!LOADED){
+    v.innerHTML='<div class="wrap"><div class="col-main"><div class="empty">'+esc(LOADERR||'Laddar innehållet...')+
+      (LOADERR&&sb?'<div style="margin-top:12px"><button class="btn" id="logout">Logga ut</button></div>':'')+'</div></div></div>';
+    document.getElementById('foot').innerHTML=''; return;
+  }
+  if(S.page==='admin') v.innerHTML=vAdmin();
+  else if(S.page==='course') v.innerHTML=vCourse();
+  else if(S.page==='test') v.innerHTML=vTest();
+  else if(S.page==='result') v.innerHTML=vResult();
+  else v.innerHTML=vPath();
+  document.getElementById('foot').innerHTML =
+    'Inloggad som '+esc(ME)+' &nbsp;·&nbsp; <button id="logout">Logga ut</button>'+
+    (CAN_EDIT?' &nbsp;·&nbsp; <button id="build">'+(S.build?'Byggläge på, allt upplåst. Klicka för att låsa vägen':'Byggläge av, vägen är låst i ordning. Klicka för att låsa upp')+'</button>':'');
+  if(!render.keep) window.scrollTo(0,0);
+  render.keep=false;
+  loadImages();
+}
+
+document.addEventListener('click', function(e){
+  var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#bell');
+  if(!t) { document.getElementById('hits').classList.remove('on'); return; }
+  var a;
+  if(t.id==='build'){ S.build=!S.build; save(); return render(); }
+  if(t.id==='home'){ e.preventDefault(); S.page='path'; return render(); }
+  if(t.id==='navPath'){ S.page='path'; S.role='agent'; return render(); }
+  if(t.id==='navAdmin'){ if(!CAN_EDIT) return; S.page='admin'; loadProgress().then(function(){ render(); }); return; }
+  if(t.id==='bell'){ S.page='path'; return render(); }
+  if((a=t.getAttribute('data-go'))){ S.page=a; return render(); }
+  if((a=t.getAttribute('data-open'))){
+    if(t.getAttribute('data-locked')){ alert('Den delen öppnas när du kommit dit i ordningen.'); return; }
+    S.course=a; S.tab='learn'; S.page='course'; return render(); }
+  if((a=t.getAttribute('data-tab'))){ S.tab=a; return render(); }
+  if((a=t.getAttribute('data-read'))){ rec(a).st='done'; save(); S.page='path'; return render(); }
+  if((a=t.getAttribute('data-test'))){ S.course=a; S.draft[a]={a:{},free:''}; S.page='test'; return render(); }
+  if((a=t.getAttribute('data-find'))){ var f=document.getElementById('q'); f.value=a; f.focus(); runFind(a); return; }
+  if((a=t.getAttribute('data-hit'))){
+    var parts=a.split('|'); S.course=parts[0]; S.tab=parts[1]==='quick'?'quick':'learn';
+    if(status(idxOf(S.course))==='locked') return;
+    document.getElementById('hits').classList.remove('on'); document.getElementById('q').value='';
+    S.page='course'; return render();
+  }
+  if((a=t.getAttribute('data-pick'))){
+    var p=a.split('-'), qi=+p[0], oi=+p[1], c=byId(S.course), q=c.q[qi];
+    var d=S.draft[c.id], cur=d.a[qi]||[];
+    if(q.multi){ var at=cur.indexOf(oi); if(at>-1) cur.splice(at,1); else cur.push(oi); d.a[qi]=cur; }
+    else d.a[qi]=[oi];
+    var f=document.getElementById('free'); if(f) d.free=f.value;
+    return render();
+  }
+});
+
+document.addEventListener('click', function(e){
+  if(e.target.id!=='send') return;
+  var c=byId(S.course), d=S.draft[c.id];
+  var f=document.getElementById('free'); if(f) d.free=f.value;
+  for(var i=0;i<c.q.length;i++){ if(!(d.a[i]||[]).length){ alert('Fråga '+(i+1)+' är obesvarad.'); return; } }
+  if(c.free && d.free.trim().length<10){ alert('Skriv ett svar på fritextfrågan.'); return; }
+  var right=0, answers=[];
+  for(var j=0;j<c.q.length;j++){ answers.push(d.a[j]); if(same(d.a[j], c.q[j].c)) right++; }
+  var r=rec(c.id);
+  if(right>(r.right||-1)){ r.right=right; r.answers=answers; }
+  r.free=d.free;
+  r.when=new Date().toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'});
+  var passed=right>=need(c);
+  r.st = !passed ? 'redo' : (c.gate ? 'wait' : 'done');
+  if(!passed){ r.right=right; r.answers=answers; }
+  save(); S.page='result'; render();
+});
+
+document.addEventListener('click', function(e){
+  var rv=e.target && e.target.getAttribute && e.target.getAttribute('data-reveal');
+  if(rv){ var el=document.getElementById(rv); if(el){ var on=el.style.display!=='none'; el.style.display=on?'none':'block'; e.target.textContent=on?'Visa hur du gör':'Dölj'; } return; }
+  if(e.target && e.target.id==='showRight'){
+    var b=document.getElementById('rightBox');
+    if(b){ var on=b.style.display!=='none'; b.style.display=on?'none':'block';
+      e.target.textContent=on?('Visa de '+b.children.length+' du hade rätt på'):'Dölj'; }
+  }
+});
+document.getElementById('q').addEventListener('input', function(){ runFind(this.value); });
+document.getElementById('q').addEventListener('keydown', function(e){ if(e.key==='Escape'){ this.value=''; runFind(''); } });
+
+render();
+</script>
+</body>
+</html>
