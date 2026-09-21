@@ -770,9 +770,11 @@ document.addEventListener('click', function(e){
 function vLogin(){
   return '<div class="wrap"><div class="col-main" style="max-width:420px;margin:40px auto">'+
     '<div class="card pad"><h1 style="font-size:20px;font-weight:600;margin-bottom:6px">Logga in</h1>'+
-    '<p style="margin:0 0 14px;font-size:13.5px;color:var(--muted)">Skriv din Dynava-mejl. Du får en inloggningslänk som gäller en gång.</p>'+
+    '<p style="margin:0 0 14px;font-size:13.5px;color:var(--muted)">Skriv din Dynava-mejl. Har du ett lösenord loggar du in med det. Annars får du en inloggningslänk som gäller en gång.</p>'+
     '<input id="loginEmail" type="email" placeholder="fornamn.efternamn@'+ALLOWED_DOMAIN+'" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
-    '<button class="btn main" id="loginSend" style="width:100%">Skicka inloggningslänk</button>'+
+    '<input id="loginPass" type="password" placeholder="Lösenord, om du har ett" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
+    '<button class="btn main" id="loginPw" style="width:100%;margin-bottom:8px">Logga in med lösenord</button>'+
+    '<button class="btn" id="loginSend" style="width:100%">Skicka inloggningslänk istället</button>'+
     '<p id="loginMsg" style="margin:12px 0 0;font-size:13px;color:var(--muted)"></p></div></div></div>';
 }
 document.addEventListener('click', function(e){
@@ -784,6 +786,22 @@ document.addEventListener('click', function(e){
     e.target.disabled=false;
     msg.textContent = res.error ? ('Det gick inte att skicka. '+res.error.message) : 'Kolla din mejl och klicka på länken.';
   });
+});
+
+document.addEventListener('click', function(e){
+  if(!e.target || e.target.id!=='loginPw') return;
+  var em=(document.getElementById('loginEmail').value||'').trim().toLowerCase(), pw=document.getElementById('loginPass').value||'', msg=document.getElementById('loginMsg');
+  if(!em || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Använd din adress som slutar på @'+ALLOWED_DOMAIN+'.'; return; }
+  if(!pw){ msg.textContent='Skriv ditt lösenord.'; return; }
+  e.target.disabled=true; msg.textContent='Loggar in...';
+  sb.auth.signInWithPassword({email:em, password:pw}).then(function(res){
+    e.target.disabled=false;
+    if(res.error){ msg.textContent='Inloggningen misslyckades. Kontrollera mejl och lösenord.'; return; }
+    location.reload();
+  });
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && e.target && e.target.id==='loginPass'){ var b=document.getElementById('loginPw'); if(b) b.click(); }
 });
 
 async function boot(){
