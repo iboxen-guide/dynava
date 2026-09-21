@@ -146,6 +146,10 @@ a{color:var(--accent)}
 .edbox label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:8px 0 4px}
 .edbox input,.edbox textarea{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)}
 .edhint{font-size:12px;color:var(--muted);margin-top:5px}
+.kont{padding:9px 0;border-top:1px solid var(--line)}
+.kont:first-of-type{border-top:0}
+.kont .kl{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.kont .kv{display:block;font-size:13.5px;color:var(--ink)}
 .quick{font-size:14px;line-height:1.6}
 .quick div{padding:10px 0;border-bottom:1px solid var(--line)}
 .quick div:last-child{border-bottom:0}
@@ -225,6 +229,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
     <nav>
       <button id="navPath" class="on">Din väg</button>
       <button id="navAdmin">Granskning</button>
+      <button id="navUsers">Användare</button>
     </nav>
     <div class="bar-right">
       <div class="find">
@@ -326,9 +331,9 @@ function vPath(){
      '<button class="pill" data-find="känslig">Känsliga uppgifter</button>'+
      '<button class="pill" data-find="AI-verktyg">AI-verktyg</button>'+
      '<button class="pill" data-find="registreringsnummer">Registreringsnummer</button></div>';
-  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Vem du frågar</div>'+
-     '<div style="font-size:13px;line-height:1.6;color:var(--muted)">Dataskydd och GDPR<br><a href="mailto:gdpr@dynava.com">gdpr@dynava.com</a>'+
-     '<div style="margin-top:7px">Schema och frånvaro<br>Närmaste chef</div></div></div>';
+  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:4px">Vem du frågar</div>'+
+     '<div class="kont"><span class="kl">Dataskydd och GDPR</span><span class="kv">Mejla <a href="mailto:gdpr@dynava.com">gdpr@dynava.com</a></span></div>'+
+     '<div class="kont"><span class="kl">Schema och frånvaro</span><span class="kv">Kontakta din närmaste chef</span></div></div>';
   h+='</div></div>';
   return h;
 }
@@ -800,6 +805,75 @@ async function boot(){
 }
 boot();
 
+
+/* ---------- användare ---------- */
+var MEMBERS=[];
+function loadMembers(){
+  return sb.from('members').select('email,role,created_at').order('email').then(function(r){ MEMBERS=r.data||[]; });
+}
+function vUsers(){
+  if(!CAN_EDIT) return '<div class="wrap"><div class="col-main"><div class="empty">Bara för admin.</div></div></div>';
+  var admins=MEMBERS.filter(function(m){return m.role==='admin';}).length;
+  var h='<div class="wrap"><div class="col-main" style="max-width:720px;margin:0 auto">';
+  h+='<h1 style="font-size:22px;font-weight:600">Användare</h1>';
+  h+='<p style="margin:5px 0 18px;font-size:13.5px;color:var(--muted)">Bara adresser på listan kan logga in. Agenter går utbildningen. Admin kan dessutom redigera, granska och hantera användare.</p>';
+  h+='<div class="card pad" style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">Lägg till användare</div>'+
+     '<div class="row" style="gap:8px;align-items:stretch">'+
+     '<input id="newEmail" type="email" placeholder="fornamn.efternamn@'+ALLOWED_DOMAIN+'" style="flex:1 1 220px;font:inherit;padding:9px 11px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)">'+
+     '<select id="newRole" style="font:inherit;padding:9px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)"><option value="agent">Agent</option><option value="admin">Admin</option></select>'+
+     '<button class="btn main" id="addUser">Lägg till</button></div>'+
+     '<p id="userMsg" style="margin:8px 0 0;font-size:13px;color:var(--muted)"></p></div>';
+  h+='<div class="lead">'+MEMBERS.length+' användare</div>';
+  for(var i=0;i<MEMBERS.length;i++){
+    var m=MEMBERS[i], self=(m.email===ME), lastAdmin=(m.role==='admin' && admins<=1);
+    h+='<div class="card pad" style="margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+       '<span class="av">'+esc(m.email.slice(0,2).toUpperCase())+'</span>'+
+       '<span style="flex:1 1 200px;min-width:0;font-size:14px;overflow-wrap:anywhere">'+esc(m.email)+(self?' <span style="color:var(--muted);font-size:12.5px">(du)</span>':'')+'</span>'+
+       '<select data-urole="'+esc(m.email)+'"'+((self||lastAdmin)?' disabled title="Går inte att ändra här"':'')+' style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)">'+
+         '<option value="agent"'+(m.role==='agent'?' selected':'')+'>Agent</option><option value="admin"'+(m.role==='admin'?' selected':'')+'>Admin</option></select>'+
+       ((self||lastAdmin)?'':'<button class="btn" data-udel="'+esc(m.email)+'">Ta bort</button>')+
+       '</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+document.addEventListener('click', function(e){
+  var t=e.target.closest('#addUser,[data-udel]'); if(!t || !CAN_EDIT) return;
+  if(t.id==='addUser'){
+    var em=(document.getElementById('newEmail').value||'').trim().toLowerCase(), role=document.getElementById('newRole').value, msg=document.getElementById('userMsg');
+    if(!/^[^@\s]+@[^@\s]+$/.test(em) || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Adressen måste sluta på @'+ALLOWED_DOMAIN+'.'; return; }
+    if(MEMBERS.some(function(m){return m.email===em;})){ msg.textContent='Adressen finns redan på listan.'; return; }
+    t.disabled=true; msg.textContent='Lägger till...';
+    sb.from('members').insert({email:em, role:role}).then(function(r){
+      t.disabled=false;
+      if(r.error){ msg.textContent='Det gick inte. '+r.error.message; return; }
+      loadMembers().then(function(){ render.keep=true; render(); var m2=document.getElementById('userMsg'); if(m2) m2.textContent=em+' är tillagd.'; });
+    });
+    return;
+  }
+  var del=t.getAttribute('data-udel');
+  if(del){
+    if(del===ME){ alert('Du kan inte ta bort dig själv.'); return; }
+    if(!confirm('Ta bort '+del+'? Personen kan inte logga in längre. Framsteg och svar finns kvar.')) return;
+    sb.from('members').delete().eq('email',del).then(function(r){
+      if(r.error){ alert('Det gick inte. '+r.error.message); return; }
+      loadMembers().then(function(){ render.keep=true; render(); });
+    });
+  }
+});
+document.addEventListener('change', function(e){
+  var em=e.target.getAttribute && e.target.getAttribute('data-urole'); if(!em || !CAN_EDIT) return;
+  var role=e.target.value;
+  if(em===ME){ alert('Du kan inte ändra din egen roll.'); return; }
+  var admins=MEMBERS.filter(function(m){return m.role==='admin';}).length;
+  var cur=(MEMBERS.find(function(m){return m.email===em;})||{}).role;
+  if(cur==='admin' && role!=='admin' && admins<=1){ alert('Det måste finnas minst en admin.'); render.keep=true; render(); return; }
+  sb.from('members').update({role:role}).eq('email',em).then(function(r){
+    if(r.error){ alert('Det gick inte. '+r.error.message); }
+    loadMembers().then(function(){ render.keep=true; render(); });
+  });
+});
+
 /* ---------- sök ---------- */
 var IDX=[];
 function buildIdx(){ IDX=[];
@@ -851,6 +925,8 @@ function render(){
   document.getElementById('navAdmin').className = S.page==='admin'?'on':'';
   document.getElementById('me').textContent = (ME||'?').slice(0,2).toUpperCase();
   document.getElementById('navAdmin').style.display = CAN_EDIT?'':'none';
+  document.getElementById('navUsers').style.display = CAN_EDIT?'':'none';
+  document.getElementById('navUsers').className = S.page==='users'?'on':'';
   var n=unseen(), b=document.getElementById('bell');
   b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H8l-4 4z"></path></svg>'+(n?'<span>'+n+'</span>':'');
   var v=document.getElementById('view');
@@ -861,6 +937,7 @@ function render(){
     document.getElementById('foot').innerHTML=''; return;
   }
   if(S.page==='admin') v.innerHTML=vAdmin();
+  else if(S.page==='users') v.innerHTML=vUsers();
   else if(S.page==='course') v.innerHTML=vCourse();
   else if(S.page==='test') v.innerHTML=vTest();
   else if(S.page==='result') v.innerHTML=vResult();
@@ -874,13 +951,14 @@ function render(){
 }
 
 document.addEventListener('click', function(e){
-  var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#bell');
+  var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#navUsers,#bell');
   if(!t) { document.getElementById('hits').classList.remove('on'); return; }
   var a;
   if(t.id==='build'){ S.build=!S.build; save(); return render(); }
   if(t.id==='home'){ e.preventDefault(); S.page='path'; return render(); }
   if(t.id==='navPath'){ S.page='path'; S.role='agent'; return render(); }
   if(t.id==='navAdmin'){ if(!CAN_EDIT) return; S.page='admin'; loadProgress().then(function(){ render(); }); return; }
+  if(t.id==='navUsers'){ if(!CAN_EDIT) return; S.page='users'; loadMembers().then(function(){ render(); }); return; }
   if(t.id==='bell'){ S.page='path'; return render(); }
   if((a=t.getAttribute('data-go'))){ S.page=a; return render(); }
   if((a=t.getAttribute('data-open'))){
