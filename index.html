@@ -228,6 +228,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
     <div class="sep"></div>
     <nav>
       <button id="navPath" class="on">Din väg</button>
+      <button id="navTrouble">Felsökning</button>
       <button id="navAdmin">Granskning</button>
       <button id="navUsers">Användare</button>
     </nav>
@@ -263,6 +264,7 @@ function rec(id){ if(!S.p[id]) S.p[id]={}; return S.p[id]; }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function status(i){
+  if(i<0||i>=COURSES.length) return 'open';
   var c=COURSES[i], r=S.p[c.id]||{};
   if(r.st) return r.st;
   if(CAN_EDIT) return 'open';
@@ -338,7 +340,7 @@ function vPath(){
   return h;
 }
 
-function byId(id){ for(var i=0;i<COURSES.length;i++){ if(COURSES[i].id===id) return COURSES[i]; } return null; }
+function byId(id){ if(TROUBLE && id===TROUBLE.id) return TROUBLE; for(var i=0;i<COURSES.length;i++){ if(COURSES[i].id===id) return COURSES[i]; } return null; }
 function idxOf(id){ for(var i=0;i<COURSES.length;i++){ if(COURSES[i].id===id) return i; } return -1; }
 
 function blocks(list, base){
@@ -380,9 +382,9 @@ function blocks(list, base){
 }
 
 function vCourse(){
-  var c=byId(S.course), i=idxOf(S.course), st=status(i), r=S.p[c.id]||{};
+  var c=byId(S.course), i=idxOf(S.course), st=(i>-1?status(i):'open'), r=S.p[c.id]||{};
   var h='<div class="wrap"><div class="col-main">';
-  h+='<div class="crumb"><button data-go="path">Din väg</button><span>/</span><span>Steg '+(i+1)+'</span><span>/</span><span style="color:var(--ink)">'+esc(c.title)+'</span></div>';
+  h+='<div class="crumb"><button data-go="path">Din väg</button><span>/</span>'+(i>-1?'<span>Steg '+(i+1)+'</span><span>/</span>':'')+'<span style="color:var(--ink)">'+esc(c.title)+'</span></div>';
   h+='<h1 style="font-family:Newsreader,Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.012em">'+esc(c.title)+'</h1>';
   h+='<p style="margin:5px 0 0;font-size:14.5px;color:var(--muted)">'+esc(c.sum)+'</p>';
   if(CAN_EDIT) h+='<div style="margin-top:12px"><button class="btn'+(EDITMODE?' main':'')+'" id="edtoggle">'+(EDITMODE?'Redigeringsläge på, klicka för att avsluta':'Redigera kursen')+'</button></div>';
@@ -408,6 +410,7 @@ function vCourse(){
     else h+='<div class="prose">'+blocks(c.body)+'</div>';
   }
 
+  if(i===-1){ h+='</div><div class="col-side"></div></div>'; return h.replace('<div class="col-side"></div>',''); }
   h+='<div style="margin:26px 0 0;padding-top:20px;border-top:1px solid var(--line)" class="row">';
   if(!c.test || !(c.q||[]).length){
     h+='<button class="btn" data-go="path">Tillbaka till din väg</button>';
@@ -586,6 +589,7 @@ function vAdmin(){
 
 /* ---------- innehåll och redigering ---------- */
 var SB_URL='https://wnkkjraapbichqcwibia.supabase.co', SB_KEY='sb_publishable_oetviK7tf4pFrnW7HVr9Jg_mYAvC_eM', ALLOWED_DOMAIN='dynava.com';
+var TROUBLE=null, TROUBLE_ID='felsokning';
 var sb=null, ME='', CAN_EDIT=false, EDITMODE=false, EDITING=null, LOADED=false, LOADERR='', NEEDLOGIN=false, ALLP=[], SYNCED={};
 function toEdit(x){ return String(x||'').replace(/<strong>([\s\S]*?)<\/strong>/g,'**$1**').replace(/<[^>]+>/g,''); }
 function fromEdit(t){ return esc(String(t||'')).replace(/\*\*([\s\S]+?)\*\*/g,'<strong>$1</strong>'); }
@@ -816,7 +820,9 @@ async function boot(){
     CAN_EDIT=(m.data.role==='admin');
     var c=await sb.from('courses').select('*').order('ord');
     if(c.error){ LOADERR='Innehållet kunde inte laddas. '+c.error.message; return render(); }
-    COURSES=(c.data||[]).map(sanitizeCourse);
+    var all=(c.data||[]).map(sanitizeCourse);
+    TROUBLE=all.filter(function(x){ return x.id===TROUBLE_ID; })[0]||null;
+    COURSES=all.filter(function(x){ return x.id!==TROUBLE_ID; });
     await loadProgress();
     LOADED=true; buildIdx(); render();
   }catch(err){ LOADERR='Något gick fel. '+(err.message||err); render(); }
@@ -895,6 +901,7 @@ document.addEventListener('change', function(e){
 /* ---------- sök ---------- */
 var IDX=[];
 function buildIdx(){ IDX=[];
+  if(TROUBLE){ for(var ti=0;ti<TROUBLE.body.length;ti++){ var tb=TROUBLE.body[ti]; if(tb.t==='h2') IDX.push({t:tb.x, s:'Felsökning', txt:tb.x.toLowerCase(), id:TROUBLE_ID, i:-1}); if(tb.t==='p'||tb.t==='pull'){ var pt=String(tb.x||'').replace(/<[^>]+>/g,''); IDX.push({t:pt.slice(0,58)+(pt.length>58?'…':''), s:'Felsökning', txt:pt.toLowerCase(), id:TROUBLE_ID, i:-1}); } } }
   for(var i=0;i<COURSES.length;i++){
     var c=COURSES[i];
     IDX.push({t:c.title, s:c.sum, txt:(c.title+' '+c.sum).toLowerCase(), id:c.id, i:i});
@@ -928,6 +935,7 @@ function runFind(v){
   var h='';
   for(var j=0;j<out.length;j++){
     var o=out[j];
+    if(o.i===-1){ h+='<button class="hit" data-hit="'+esc(o.id)+'"><b>'+esc(o.t)+'</b><small>'+esc(o.s)+'</small></button>'; continue; }
     if(o.faq){ h+='<button class="hit" data-go="faq"><b>'+esc(o.t)+'</b><small>'+esc(o.s)+'</small></button>'; continue; }
     var locked=status(o.i)==='locked';
     h+='<button class="hit'+(locked?' off':'')+'" data-hit="'+o.id+(o.quick?'|quick':'')+'">'+
@@ -945,6 +953,9 @@ function render(){
   document.getElementById('navAdmin').style.display = CAN_EDIT?'':'none';
   document.getElementById('navUsers').style.display = CAN_EDIT?'':'none';
   document.getElementById('navUsers').className = S.page==='users'?'on':'';
+  var nt=document.getElementById('navTrouble');
+  nt.style.display = TROUBLE?'':'none';
+  nt.className = (S.page==='course' && S.course===TROUBLE_ID)?'on':'';
   var n=unseen(), b=document.getElementById('bell');
   b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H8l-4 4z"></path></svg>'+(n?'<span>'+n+'</span>':'');
   var v=document.getElementById('view');
@@ -969,13 +980,14 @@ function render(){
 }
 
 document.addEventListener('click', function(e){
-  var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#navUsers,#bell');
+  var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#navUsers,#navTrouble,#bell');
   if(!t) { document.getElementById('hits').classList.remove('on'); return; }
   var a;
   if(t.id==='build'){ S.build=!S.build; save(); return render(); }
   if(t.id==='home'){ e.preventDefault(); S.page='path'; return render(); }
   if(t.id==='navPath'){ S.page='path'; S.role='agent'; return render(); }
   if(t.id==='navAdmin'){ if(!CAN_EDIT) return; S.page='admin'; loadProgress().then(function(){ render(); }); return; }
+  if(t.id==='navTrouble'){ if(!TROUBLE) return; S.course=TROUBLE_ID; S.tab='learn'; S.page='course'; return render(); }
   if(t.id==='navUsers'){ if(!CAN_EDIT) return; S.page='users'; loadMembers().then(function(){ render(); }); return; }
   if(t.id==='bell'){ S.page='path'; return render(); }
   if((a=t.getAttribute('data-go'))){ S.page=a; return render(); }
