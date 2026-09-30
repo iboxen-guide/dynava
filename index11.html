@@ -332,7 +332,7 @@ function vPath(){
     var cls='step'+(S.kb||st==='open'?' now':'')+(locked?' off':'');
     var right = S.kb ? '<span class="chip go">Läs</span>'
               : (info && !locked ? '<span class="chip">'+icon('note')+(st==='done'?'Läst':'Information')+'</span>' : chip(st));
-    h+='<div class="'+cls+'">'+
+    h+='<div class="'+cls+'"'+(locked?'':' data-open="'+c.id+'" style="cursor:pointer"')+'>'+
        '<button class="stepopen" data-open="'+c.id+'"'+(locked?' disabled':'')+'>'+
        (S.kb?'':'<span class="n">'+(i+1)+'</span>')+
        '<span class="t"><b>'+esc(c.title)+'</b><small>'+esc(c.sum)+'</small></span></button>'+
