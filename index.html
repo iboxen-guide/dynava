@@ -262,7 +262,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
 var COURSES=[], IMG={}, FAQ=[];
 
 var PASS = 0.8;
-var VERSION = '15';
+var VERSION = '16';
 
 /* ---------- tillstånd ---------- */
 var KEY='dynava-larnaca-build';
@@ -1060,7 +1060,9 @@ document.addEventListener('click', function(e){
     if(q.multi){ var at=cur.indexOf(oi); if(at>-1) cur.splice(at,1); else cur.push(oi); d.a[qi]=cur; }
     else d.a[qi]=[oi];
     var f=document.getElementById('free'); if(f) d.free=f.value;
-    return render();
+    var y=window.scrollY||window.pageYOffset||0;
+    render.keep=true; render(); window.scrollTo(0,y);
+    return;
   }
 });
 
