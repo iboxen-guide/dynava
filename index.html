@@ -152,6 +152,10 @@ a{color:var(--accent)}
 .kont .kv{display:block;font-size:13.5px;color:var(--ink)}
 .star-btn{background:none;border:0;color:var(--muted);font-size:16px;padding:4px 8px;cursor:pointer;flex:none}
 .star-btn.on{color:#DDB268}
+.star-btn{position:relative}
+.star-btn::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);right:0;white-space:nowrap;background:var(--bar);color:#fff;font:500 12px "IBM Plex Sans",sans-serif;line-height:1.3;padding:5px 9px;border-radius:5px;opacity:0;pointer-events:none;transform:translateY(2px);transition:opacity .12s,transform .12s;z-index:25}
+.star-btn.lft::after{left:0;right:auto}
+.star-btn:hover::after,.star-btn:focus-visible::after{opacity:1;transform:none}
 .stepopen{background:none;border:0;text-align:left;flex:1 1 auto;min-width:0;display:flex;gap:12px;align-items:center;padding:0;cursor:pointer}
 .stepopen:disabled{cursor:default}
 .quick{font-size:14px;line-height:1.6}
@@ -258,6 +262,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
 var COURSES=[], IMG={}, FAQ=[];
 
 var PASS = 0.8;
+var VERSION = '15';
 
 /* ---------- tillstånd ---------- */
 var KEY='dynava-larnaca-build';
@@ -266,6 +271,7 @@ var BOOKMARKS=[];
 try{ BOOKMARKS=JSON.parse(localStorage.getItem('dynava-bookmarks')||'[]'); if(!Array.isArray(BOOKMARKS)) BOOKMARKS=[]; }catch(e){ BOOKMARKS=[]; }
 function saveBookmarks(){ try{ localStorage.setItem('dynava-bookmarks', JSON.stringify(BOOKMARKS)); }catch(e){} }
 function isBookmarked(id){ return BOOKMARKS.indexOf(id)>-1; }
+function favTip(id){ return isBookmarked(id)?'Ta bort från favoriter':'Lägg till som favorit'; }
 function toggleBookmark(id){ var k=BOOKMARKS.indexOf(id); if(k>-1) BOOKMARKS.splice(k,1); else BOOKMARKS.push(id); saveBookmarks(); }
 try{ var raw=localStorage.getItem(KEY); if(raw==='1') S.build=true; }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, S.build?'1':'0'); }catch(e){} syncProgress(); }
@@ -284,6 +290,13 @@ function status(i){
   }
   return 'open';
 }
+function kbUnlocked(){
+  if(CAN_EDIT) return true;
+  if(!COURSES.length) return false;
+  for(var i=0;i<COURSES.length;i++){ if(status(i)!=='done') return false; }
+  return true;
+}
+function stepsLeft(){ var n=0; for(var i=0;i<COURSES.length;i++){ if(status(i)!=='done') n++; } return n; }
 var LABEL={locked:'Låst', open:'Öppen', redo:'Ta om testet', wait:'Väntar på granskning', done:'Godkänd'};
 
 function icon(n){
@@ -318,11 +331,14 @@ function vPath(){
      '<div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
      (!S.kb?'<span style="font-size:13px;color:var(--muted);margin-right:8px">'+done+' av '+COURSES.length+' klara</span>':'')+
      '<button class="btn'+(!S.kb?' main':'')+'" id="toPath">Utbildningsväg</button>'+
-     '<button class="btn'+(S.kb?' main':'')+'" id="toKb">Uppslagsverk</button>'+
+     (kbUnlocked()
+       ? '<button class="btn'+(S.kb?' main':'')+'" id="toKb">Uppslagsverk</button>'
+       : '<button class="btn" id="toKb" disabled title="Öppnas när du gått igenom utbildningen">'+icon('lock')+' Uppslagsverk</button>')+
      '</div></div>'+
      (S.kb
        ? '<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">Allt innehåll öppet för läsning, till exempel mitt i ett samtal. Genomgångarna görs i Utbildningsväg, och inget här påverkar dina framsteg.</p></div>'
-       : '<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">Nästa steg öppnas när du klarat genomgången. Allt du gått igenom går att slå upp igen.</p>'+
+       : '<p style="margin:4px 0 0;font-size:13.5px;color:var(--muted)">Nästa steg öppnas när du klarat genomgången.'+
+         (kbUnlocked() ? ' Allt du gått igenom går att slå upp igen.' : ' Uppslagsverket öppnas när du gått igenom hela utbildningen. '+stepsLeft()+' steg kvar.')+'</p>'+
          '<div class="track"><i style="width:'+(done/COURSES.length*100)+'%"></i></div></div>');
   var sec='';
   for(var i=0;i<COURSES.length;i++){
@@ -336,13 +352,13 @@ function vPath(){
        '<button class="stepopen" data-open="'+c.id+'"'+(locked?' disabled':'')+'>'+
        (S.kb?'':'<span class="n">'+(i+1)+'</span>')+
        '<span class="t"><b>'+esc(c.title)+'</b><small>'+esc(c.sum)+'</small></span></button>'+
-       '<button class="star-btn'+(isBookmarked(c.id)?' on':'')+'" data-bm="'+c.id+'" title="Bokmärk" aria-label="Bokmärk '+esc(c.title)+'">★</button>'+
+       '<button class="star-btn'+(isBookmarked(c.id)?' on':'')+'" data-bm="'+c.id+'" data-tip="'+favTip(c.id)+'" aria-label="'+favTip(c.id)+': '+esc(c.title)+'">★</button>'+
        right+'</div>';
   }
   h+='</div><div class="col-side">';
   var bmh='';
   for(var bi=0;bi<BOOKMARKS.length;bi++){ var bc=byId(BOOKMARKS[bi]); if(bc) bmh+='<button class="pill" data-open="'+bc.id+'" data-viakb="1">★ '+esc(bc.title)+'</button>'; }
-  if(bmh) h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:6px">Dina bokmärken</div><p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)">Öppnas för läsning, även mitt i ett samtal.</p>'+bmh+'</div>';
+  if(bmh) h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:6px">Dina favoriter</div><p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)">Öppnas för läsning, även mitt i ett samtal.</p>'+bmh+'</div>';
   var notes=[];
   for(var k in S.p){ if(S.p[k].note){ notes.push([k,S.p[k]]); } }
   if(notes.length){
@@ -350,8 +366,8 @@ function vPath(){
     h+='<div class="note warn"><b>'+icon('note')+' Kommentar från granskaren</b>'+esc(n0[1].note)+
        '<div style="margin-top:6px;color:var(--warn);font-size:12px">Om '+esc(cc?cc.title:n0[0])+'</div></div>';
   }
-  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Slå upp direkt</div>'+
-     '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Mitt i ett samtal? Sök i allt, även i steg du inte kommit till.</p>'+
+  h+='<div class="card pad"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">Sök direkt</div>'+
+     '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Mitt i ett samtal? Sök i allt. Ett låst steg öppnas först när du kommit dit, eller när Uppslagsverket är öppet.</p>'+
      '<button class="pill" data-find="incident">Rapportera incident</button>'+
      '<button class="pill" data-find="känslig">Känsliga uppgifter</button>'+
      '<button class="pill" data-find="AI-verktyg">AI-verktyg</button>'+
@@ -409,7 +425,7 @@ function vCourse(){
   var h='<div class="wrap"><div class="col-main">';
   h+='<div class="crumb"><button data-go="path">Hem</button><span>/</span>'+(i>-1?'<span>Steg '+(i+1)+'</span><span>/</span>':'')+'<span style="color:var(--ink)">'+esc(c.title)+'</span></div>';
   h+='<h1 style="font-family:Newsreader,Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.012em">'+esc(c.title)+'</h1>';
-  h+='<div><button class="star-btn'+(isBookmarked(c.id)?' on':'')+'" data-bm="'+c.id+'" title="Bokmärk" style="font-size:20px;padding:2px 0">★</button></div>';
+  h+='<div><button class="star-btn lft'+(isBookmarked(c.id)?' on':'')+'" data-bm="'+c.id+'" data-tip="'+favTip(c.id)+'" aria-label="'+favTip(c.id)+'" style="font-size:20px;padding:2px 0">★</button></div>';
   h+='<p style="margin:5px 0 0;font-size:14.5px;color:var(--muted)">'+esc(c.sum)+'</p>';
   if(CAN_EDIT) h+='<div style="margin-top:12px"><button class="btn'+(EDITMODE?' main':'')+'" id="edtoggle">'+(EDITMODE?'Redigeringsläge på, klicka för att avsluta':'Redigera kursen')+'</button></div>';
 
@@ -420,12 +436,12 @@ function vCourse(){
     h+='<div class="note warn" style="margin-top:14px"><b>'+icon('note')+' Kommentar från granskaren</b>'+esc(r.note)+'</div>';
   }
 
-  if(c.quick){
+  if(c.quick && c.quick.length){
     h+='<div class="tabs"><button data-tab="learn" class="'+(S.tab==='learn'?'on':'')+'">Lär dig</button>'+
-       '<button data-tab="quick" class="'+(S.tab==='quick'?'on':'')+'">Slå upp</button></div>';
+       '<button data-tab="quick" class="'+(S.tab==='quick'?'on':'')+'">Sammanfattning</button></div>';
   } else { h+='<div style="height:18px"></div>'; }
 
-  if(c.quick && S.tab==='quick'){
+  if(c.quick && c.quick.length && S.tab==='quick'){
     h+='<div class="card pad quick">';
     for(var j=0;j<c.quick.length;j++) h+='<div><b>'+esc(c.quick[j][0])+'.</b> '+esc(c.quick[j][1])+'</div>';
     h+='</div>';
@@ -987,12 +1003,13 @@ function render(){
   var n=unseen(), b=document.getElementById('bell');
   b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H8l-4 4z"></path></svg>'+(n?'<span>'+n+'</span>':'');
   var v=document.getElementById('view');
-  if(NEEDLOGIN){ v.innerHTML=vLogin(); document.getElementById('foot').innerHTML=''; return; }
+  if(NEEDLOGIN){ v.innerHTML=vLogin(); document.getElementById('foot').innerHTML='Version '+VERSION; return; }
   if(!LOADED){
     v.innerHTML='<div class="wrap"><div class="col-main"><div class="empty">'+esc(LOADERR||'Laddar innehållet...')+
       (LOADERR&&sb?'<div style="margin-top:12px"><button class="btn" id="logout">Logga ut</button></div>':'')+'</div></div></div>';
-    document.getElementById('foot').innerHTML=''; return;
+    document.getElementById('foot').innerHTML='Version '+VERSION; return;
   }
+  if(S.kb && !kbUnlocked()) S.kb=false;
   if(S.page==='admin') v.innerHTML=vAdmin();
   else if(S.page==='users') v.innerHTML=vUsers();
   else if(S.page==='course') v.innerHTML=vCourse();
@@ -1001,7 +1018,8 @@ function render(){
   else v.innerHTML=vPath();
   document.getElementById('foot').innerHTML =
     'Inloggad som '+esc(ME)+' &nbsp;·&nbsp; <button id="logout">Logga ut</button>'+
-    (CAN_EDIT?' &nbsp;·&nbsp; Admin, alla steg är upplåsta':'');
+    (CAN_EDIT?' &nbsp;·&nbsp; Admin, alla steg är upplåsta':'')+
+    ' &nbsp;·&nbsp; Version '+VERSION;
   if(!render.keep) window.scrollTo(0,0);
   render.keep=false;
   loadImages();
@@ -1011,7 +1029,7 @@ document.addEventListener('click', function(e){
   var t=e.target.closest('[data-open],[data-go],[data-tab],[data-read],[data-test],[data-pick],[data-hit],[data-find],#build,#home,#navPath,#navAdmin,#navUsers,#navTrouble,#bell,#toKb,#toPath,[data-bm]');
   if(!t) { document.getElementById('hits').classList.remove('on'); return; }
   var a;
-  if(t.id==='toKb'){ S.kb=true; render.keep=true; return render(); }
+  if(t.id==='toKb'){ if(!kbUnlocked()) return; S.kb=true; render.keep=true; return render(); }
   if(t.id==='toPath'){ S.kb=false; render.keep=true; return render(); }
   if(t.hasAttribute('data-bm')){ toggleBookmark(t.getAttribute('data-bm')); render.keep=true; return render(); }
   if(t.id==='build'){ S.build=!S.build; save(); return render(); }
@@ -1022,7 +1040,7 @@ document.addEventListener('click', function(e){
   if(t.id==='navUsers'){ if(!CAN_EDIT) return; S.page='users'; loadMembers().then(function(){ render(); }); return; }
   if(t.id==='bell'){ S.page='path'; return render(); }
   if((a=t.getAttribute('data-go'))){ S.page=a; return render(); }
-  if((a=t.getAttribute('data-open'))){ if(t.getAttribute('data-viakb')) S.kb=true;
+  if((a=t.getAttribute('data-open'))){ if(t.getAttribute('data-viakb') && kbUnlocked()) S.kb=true;
     if(!S.kb && idxOf(a)>-1 && status(idxOf(a))==='locked'){ return; }
     if(t.getAttribute('data-locked')){ alert('Den delen öppnas när du kommit dit i ordningen.'); return; }
     S.course=a; S.tab='learn'; S.page='course'; return render(); }
