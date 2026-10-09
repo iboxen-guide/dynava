@@ -272,7 +272,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
 var COURSES=[], IMG={}, FAQ=[];
 
 var PASS = 0.8;
-var VERSION = '23';
+var VERSION = '24';
 
 /* ---------- tillstånd ---------- */
 var KEY='dynava-larnaca-build';
@@ -643,7 +643,10 @@ function vAdmin(){
 }
 
 /* ---------- innehåll och redigering ---------- */
-var SB_URL='https://wnkkjraapbichqcwibia.supabase.co', SB_KEY='sb_publishable_oetviK7tf4pFrnW7HVr9Jg_mYAvC_eM', ALLOWED_DOMAIN='dynava.com';
+var SB_URL='https://wnkkjraapbichqcwibia.supabase.co', SB_KEY='sb_publishable_oetviK7tf4pFrnW7HVr9Jg_mYAvC_eM', ALLOWED_DOMAIN='';
+function mailOk(em){ if(!/^[^@\s]+@[^@\s]+$/.test(em||'')) return false; if(!ALLOWED_DOMAIN) return true; return em.slice(-(ALLOWED_DOMAIN.length+1))==='@'+ALLOWED_DOMAIN; }
+function mailHint(){ return ALLOWED_DOMAIN ? 'Använd din adress som slutar på @'+ALLOWED_DOMAIN+'.' : 'Skriv en giltig mejladress.'; }
+function mailEx(){ return ALLOWED_DOMAIN ? 'fornamn.efternamn@'+ALLOWED_DOMAIN : 'namn@exempel.se'; }
 var TROUBLE=null, TROUBLE_ID='felsokning';
 var sb=null, ME='', CAN_EDIT=false, EDITMODE=false, EDITING=null, LOADED=false, LOADERR='', NEEDLOGIN=false, ALLP=[], SYNCED={};
 function toEdit(x){ return String(x||'').replace(/<strong>([\s\S]*?)<\/strong>/g,'**$1**').replace(/<[^>]+>/g,''); }
@@ -848,8 +851,8 @@ document.addEventListener('click', function(e){
 function vLogin(){
   return '<div class="wrap"><div class="col-main" style="max-width:420px;margin:40px auto">'+
     '<div class="card pad"><h1 style="font-size:20px;font-weight:600;margin-bottom:6px">Logga in</h1>'+
-    '<p style="margin:0 0 14px;font-size:13.5px;color:var(--muted)">Skriv din Dynava-mejl. Har du ett lösenord loggar du in med det. Annars får du en inloggningslänk som gäller en gång.</p>'+
-    '<input id="loginEmail" type="email" placeholder="fornamn.efternamn@'+ALLOWED_DOMAIN+'" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
+    '<p style="margin:0 0 14px;font-size:13.5px;color:var(--muted)">Skriv din mejladress. Har du ett lösenord loggar du in med det. Annars får du en inloggningslänk som gäller en gång.</p>'+
+    '<input id="loginEmail" type="email" placeholder="'+mailEx()+'" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
     '<input id="loginPass" type="password" placeholder="Lösenord, om du har ett" style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink);margin-bottom:10px">'+
     '<button class="btn main" id="loginPw" style="width:100%;margin-bottom:8px">Logga in med lösenord</button>'+
     '<button class="btn" id="loginSend" style="width:100%">Skicka inloggningslänk istället</button>'+
@@ -858,7 +861,7 @@ function vLogin(){
 document.addEventListener('click', function(e){
   if(!e.target || e.target.id!=='loginSend') return;
   var em=(document.getElementById('loginEmail').value||'').trim().toLowerCase(), msg=document.getElementById('loginMsg');
-  if(!em || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Använd din adress som slutar på @'+ALLOWED_DOMAIN+'.'; return; }
+  if(!mailOk(em)){ msg.textContent=mailHint(); return; }
   e.target.disabled=true; msg.textContent='Skickar...';
   sb.auth.signInWithOtp({email:em, options:{emailRedirectTo: location.origin+location.pathname}}).then(function(res){
     e.target.disabled=false;
@@ -869,7 +872,7 @@ document.addEventListener('click', function(e){
 document.addEventListener('click', function(e){
   if(!e.target || e.target.id!=='loginPw') return;
   var em=(document.getElementById('loginEmail').value||'').trim().toLowerCase(), pw=document.getElementById('loginPass').value||'', msg=document.getElementById('loginMsg');
-  if(!em || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Använd din adress som slutar på @'+ALLOWED_DOMAIN+'.'; return; }
+  if(!mailOk(em)){ msg.textContent=mailHint(); return; }
   if(!pw){ msg.textContent='Skriv ditt lösenord.'; return; }
   e.target.disabled=true; msg.textContent='Loggar in...';
   sb.auth.signInWithPassword({email:em, password:pw}).then(function(res){
@@ -979,7 +982,7 @@ function vUsers(){
   h+='<p style="margin:5px 0 18px;font-size:13.5px;color:var(--muted)">Bara adresser på listan kan logga in. Agenter går utbildningen. Admin kan dessutom redigera, granska och hantera användare.</p>';
   h+='<div class="card pad" style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">Lägg till användare</div>'+
      '<div class="row" style="gap:8px;align-items:stretch">'+
-     '<input id="newEmail" type="email" placeholder="fornamn.efternamn@'+ALLOWED_DOMAIN+'" style="flex:1 1 220px;font:inherit;padding:9px 11px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)">'+
+     '<input id="newEmail" type="email" placeholder="'+mailEx()+'" style="flex:1 1 220px;font:inherit;padding:9px 11px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)">'+
      '<select id="newRole" style="font:inherit;padding:9px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--ink)"><option value="agent">Agent</option><option value="admin">Admin</option></select>'+
      '<button class="btn main" id="addUser">Lägg till</button></div>'+
      '<p id="userMsg" style="margin:8px 0 0;font-size:13px;color:var(--muted)"></p></div>';
@@ -1001,7 +1004,7 @@ document.addEventListener('click', function(e){
   var t=e.target.closest('#addUser,[data-udel]'); if(!t || !CAN_EDIT) return;
   if(t.id==='addUser'){
     var em=(document.getElementById('newEmail').value||'').trim().toLowerCase(), role=document.getElementById('newRole').value, msg=document.getElementById('userMsg');
-    if(!/^[^@\s]+@[^@\s]+$/.test(em) || em.slice(-(ALLOWED_DOMAIN.length+1))!=='@'+ALLOWED_DOMAIN){ msg.textContent='Adressen måste sluta på @'+ALLOWED_DOMAIN+'.'; return; }
+    if(!mailOk(em)){ msg.textContent=mailHint(); return; }
     if(MEMBERS.some(function(m){return m.email===em;})){ msg.textContent='Adressen finns redan på listan.'; return; }
     t.disabled=true; msg.textContent='Lägger till...';
     sb.from('members').insert({email:em, role:role}).then(function(r){
